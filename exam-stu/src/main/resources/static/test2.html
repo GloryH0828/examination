@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="lay/layui/css/layui.css" media="all" rel="stylesheet">
+    <script charset="utf-8" src="lay/layui/layui.js"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+    <div class="layui-container" style="width:800px;height: 330px;padding-top: 60px;">
+        <form action="" class="layui-form" method="post">
+            <div class="layui-form-item">
+                <input id="testId" name="testId" type="hidden" value=""/>
+                <div class="layui-inline" style="text-align: center">
+                    <h1 class="layui-inline" id="test_name">2020-2021第二学期Java综合考试</h1>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="gard layui-form-label">考试时间：</label>
+                <div class="layui-form-label-col">
+                    2021-03-22 21:51:19至2021-03-23 19:00:00
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field  ">
+                    <legend>单选题</legend>
+                    <div class="layui-form-item">
+                        <h3 style="margin-left: 20px;margin-right: 20px;">假如线程1，线程2 在进行read,load
+                            操作中，发现主内存中count的值都是5，那么都会加载这个最新的值，在线程1对count进行修改之后，会write到主内存中，主内存中的count变量就会变为6；线程2由于已经进行read,load操作，在进行运算之后，也会更新主内存count的变量值为6；导致两个线程及时volatile关键字修改之后，还是会存在并发的情况。</h3>
+                    </div>
+                    <div class="layui-form-item">
+                        <h3 style="margin-left: 20px;margin-right: 20px; color: red">
+                            问：1=1=1=1=1=1==1==1=1=1==1=1=1==1=1</h3>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">A：</label>
+                        <div class="layui-form-label-col">
+                            这是AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">B：</label>
+                        <div class="layui-form-label-col">
+                            这是BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">C：</label>
+                        <div class="layui-form-label-col">
+                            这是CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">D：</label>
+                        <div class="layui-form-label-col">
+                            这是D
+                        </div>
+                    </div>
+                    <!-- 单选题答案 begin-->
+                    <div class="layui-form-item" id="single-select-answer">
+                        <label class="layui-form-label">答案：</label>
+                        <div class="layui-form-label-col">
+                            <input checked name="single-answer" title="A" type="radio" value="A">
+                            <input name="single-answer" title="B" type="radio" value="B">
+                            <input name="single-answer" title="C" type="radio" value="C">
+                            <input name="single-answer" title="D" type="radio" value="D">
+                        </div>
+                    </div>
+                    <!-- 单选题答案 end-->
+                </fieldset>
+
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field ">
+                    <legend>多选题</legend>
+                </fieldset>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field ">
+                    <legend>填空题</legend>
+                </fieldset>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field ">
+                    <legend>判断题</legend>
+                </fieldset>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field">
+                    <legend>简答题</legend>
+                </fieldset>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field">
+                    <legend>计算题</legend>
+                </fieldset>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field">
+                    <legend>应用题</legend>
+                </fieldset>
+            </div>
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-filter="creat" lay-submit style="margin-left: 160px;">交卷</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+</script>
+</body>
+</html>

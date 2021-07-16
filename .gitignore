@@ -1,0 +1,11 @@
+# 项目排除路径
+/account/target/
+/class/target/
+/client/target/
+/course/target/
+/eureka_server/target/
+/exam-stu/target/
+/file/target/
+/question/target/
+/student/target/
+/teacher/target/

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="layui/layui.js" type="text/javascript"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+
+    <div class="layui-container" style="width: 500px;height: 330px;padding-top: 60px;">
+        <form action="" class="layui-form" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">学号：</label>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="username"
+                           placeholder="请输入学号" type="text">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">姓名：</label>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="name" placeholder="请输入姓名"
+                           type="text">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">性别：</label>
+                <div class="layui-inline">
+                    <input checked name="sex" title="男" type="radio" value="男">
+                    <input name="sex" title="女" type="radio" value="女">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">所在班级：</label>
+                <div class="layui-input-inline">
+                    <select id="classList" lay-search name="class_id">
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-filter="add" lay-submit style="margin-left: 160px;">添加</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script charset="utf-8" src="layui/layui.js"></script>
+<script>
+    layui.use(['form'], function () {
+        var form = layui.form;
+        form.on('submit(add)', function (data) {
+            //向后台发送数据，验证登录信息
+            $.ajax({
+                url: '/student/add/' + data.field.username + '/' + data.field.name + '/' + data.field.sex + '/' + data.field.class_id, //请求url
+                data: '', //请求参数，类似于username=xxx&password=xxx
+                type: 'post', //请求方式
+                dataType: 'json', //返回值的类型
+                success: function (result) {  //服务器成功返回时执行的函数
+                    console.log(JSON.stringify(result));
+                    if (result.code == 2000) {
+                        alert("添加成功！");
+                        window.location.href = "student_add.html";
+                    } else {
+                        alert("添加失败");
+                    }
+                }
+            });
+            return false;
+        });
+
+    });
+    window.onload = function () {
+        $.ajax({
+            url: '/class/getList', //请求url
+            data: '', //请求参数，类似于username=xxx&password=xxx
+            type: 'get', //请求方式
+            dataType: 'json', //返回值的类型
+            success: function (result) {  //服务器成功返回时执行的函数
+                console.log(JSON.stringify(result.list));
+                $("#classList").empty();
+                $.each(result.list, function (index, content) {
+                    $("#classList").append("<option value=\"" + content.class_id + "\">" + content.class_name + "</option>");
+                });
+                layui.use('form', function () {
+                    var form = layui.form;//高版本建议把括号去掉，有的低版本，需要加()
+                    form.render('select');
+                    //form.render();
+                });
+
+            }
+        });
+    }
+</script>
+</body>
+</html>

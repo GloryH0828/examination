@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "home.picture",
+      "type": "java.lang.String",
+      "description": "Description for home.picture."
+  }
+] }

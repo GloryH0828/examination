@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gloryh.mapper.StudentMapper">
+    <resultMap id="studentMap" type="com.gloryh.entity.Student">
+        <id property="student_id" column="student_id"></id>
+        <result property="student_name" column="student_name"></result>
+        <result property="student_username" column="student_username"></result>
+        <result property="student_sex" column="student_sex"></result>
+        <result property="student_email" column="student_email"></result>
+        <result property="student_phone" column="student_phone"></result>
+        <result property="classes.class_id" column="class_id"></result>
+        <result property="classes.class_name" column="class_name"></result>
+    </resultMap>
+    <insert id="add">
+        INSERT INTO student(student_name, student_username, student_sex, class_id, student_password)
+        VALUES (#{name}, #{username}, #{sex}, #{class_id}, #{password});
+    </insert>
+    <insert id="addBatch">
+        INSERT INTO
+        student(student_name,student_username,student_sex,class_id,student_password,student_phone,student_email)
+        VALUES
+        <foreach collection="list" separator="," item="object" index="i">
+            (
+            #{object.姓名},
+            #{object.学号},
+            #{object.性别},
+            #{object.班级编号},
+            123456,
+            #{object.手机号},
+            #{object.邮箱}
+            )
+        </foreach>
+    </insert>
+    <select id="findAll" resultMap="studentMap">
+        SELECT student.*, class.class_name
+        FROM student,
+             class
+        WHERE student.class_id = class.class_id LIMIT #{index}
+            , #{limit}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM student
+    </select>
+    <select id="findByIndex" resultMap="studentMap">
+        SELECT student.*,class.class_name FROM student ,class
+        WHERE
+        <if test="class_id != null and class_id !=0">
+            student.class_id = #{class_id}
+            AND
+        </if>
+        <if test="keywords != null and keywords !='null' ">
+            <if test="type == 'username'">
+                student.student_username=#{keywords}
+            </if>
+            <if test="type == 'name'">
+                student.student_name LIKE CONCAT(CONCAT('%',#{keywords},'%'))
+            </if>
+            AND
+        </if>
+        student.class_id=class.class_id
+        LIMIT #{index},#{limit}
+    </select>
+    <select id="countByIndex" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM student ,class
+        WHERE
+        <if test="class_id != null and class_id !=0">
+            student.class_id = #{class_id}
+            AND
+        </if>
+        <if test="keywords != null and class_id !=0">
+            <if test="type == 'username'">
+                student.student_username=#{keywords}
+            </if>
+            <if test="type == 'name'">
+                student.student_name LIKE CONCAT(CONCAT('%',#{keywords},'%'))
+            </if>
+            AND
+        </if>
+        student.class_id=class.class_id
+    </select>
+</mapper>

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gloryh.mapper.ClassMapper">
+    <resultMap id="classMap" type="com.gloryh.entity.ClassDTO">
+        <id column="id" property="id"></id>
+        <result column="c_id" property="class_id"></result>
+        <result column="c_name" property="class_name"></result>
+        <result column="course" property="course.course_name"></result>
+        <result column="t_name" property="teacher.teacher_name"></result>
+    </resultMap>
+    <insert id="add">
+        INSERT INTO class(class_name)
+        VALUES (#{name});
+    </insert>
+    <select id="getList" resultType="com.gloryh.entity.Class">
+        SELECT *
+        FROM class;
+    </select>
+    <select id="findAll" resultMap="classMap">
+        SELECT cct.id, c1.class_name AS c_name, c1.class_id AS c_id, t.teacher_name AS t_name, c2.course_name AS course
+        FROM class_course_teacher cct,
+             class c1,
+             teacher t,
+             course c2,
+             course_teacher ct
+        WHERE c1.class_id = cct.c_id
+          AND t.teacher_id = ct.teacher_id
+          AND ct.c_t_id = cct.c_t_id
+          AND c2.course_id = ct.course_id
+            LIMIT #{index}
+            , #{limit}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM class c1,
+             teacher t,
+             course c2,
+             class_course_teacher cct,
+             course_teacher ct
+        WHERE c1.class_id = cct.c_id
+          AND t.teacher_id = ct.teacher_id
+          AND ct.c_t_id = cct.c_t_id
+          AND c2.course_id = ct.course_id
+    </select>
+    <select id="findByIndex" resultMap="classMap">
+        SELECT cct.id, c1.class_name AS c_name,c1.class_id AS c_id,t.teacher_name AS t_name,c2.course_name AS course
+        FROM class_course_teacher cct,class c1,teacher t,course c2,course_teacher ct
+        WHERE
+        <if test="class_id != null and class_id !=0">
+            c1.class_id = #{class_id}
+            AND
+        </if>
+        <if test="course_name != null and course_name != 'NaN'">
+            c2.course_name LIKE CONCAT(CONCAT('%',#{course_name},'%'))
+            AND
+        </if>
+        c1.class_id = cct.c_id
+        AND t.teacher_id = ct.teacher_id
+        AND ct.c_t_id =cct.c_t_id
+        AND c2.course_id=ct.course_id
+        LIMIT #{index},#{limit}
+    </select>
+    <select id="countByIndex" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM class c1,teacher t,course c2,class_course_teacher cct,course_teacher ct
+        WHERE
+        <if test="class_id != null and class_id !=0">
+            c1.class_id = #{class_id}
+            AND
+        </if>
+        <if test="course_name != null and course_name != 'NaN'">
+            c2.course_name LIKE CONCAT(CONCAT('%',#{course_name},'%'))
+            AND
+        </if>
+        c1.class_id = cct.c_id
+        AND t.teacher_id = ct.teacher_id
+        AND ct.c_t_id =cct.c_t_id
+        AND c2.course_id=ct.course_id
+    </select>
+</mapper>

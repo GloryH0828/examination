@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="teacher" />
+        <module name="file" />
+        <module name="question" />
+        <module name="student" />
+        <module name="config_server" />
+        <module name="eureka_server" />
+        <module name="exam-stu" />
+        <module name="client" />
+        <module name="course" />
+        <module name="class" />
+        <module name="account" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="account" options="-parameters" />
+      <module name="class" options="-parameters" />
+      <module name="client" options="-parameters" />
+      <module name="config_server" options="-parameters" />
+      <module name="course" options="-parameters" />
+      <module name="eureka_server" options="-parameters" />
+      <module name="exam-stu" options="-parameters" />
+      <module name="file" options="-parameters" />
+      <module name="question" options="-parameters" />
+      <module name="student" options="-parameters" />
+      <module name="teacher" options="-parameters" />
+    </option>
+  </component>
+</project>

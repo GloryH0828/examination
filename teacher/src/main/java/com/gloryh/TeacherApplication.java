@@ -1,0 +1,19 @@
+package com.gloryh;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+/**
+ * TODO
+ *
+ * @author 黄光辉
+ * @since 2021/3/11
+ **/
+@SpringBootApplication
+@MapperScan("com.gloryh.mapper")
+public class  TeacherApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(TeacherApplication.class, args);
+    }
+}

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="layui/layui.js" type="text/javascript"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+    <script language="JavaScript">
+        $(function () {// 初始化内容
+            document.getElementById("multiple-select-answer").style.display = "none";
+            document.getElementById("fill-answer").style.display = "none";
+            document.getElementById("judge-answer").style.display = "none";
+            document.getElementById("subjective-answer").style.display = "none";
+            document.getElementById("isImage").style.display = "none";
+        });
+    </script>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+
+    <div class="layui-container" style="width: 500px;height: 330px;padding-top: 60px;">
+        <form action="" class="layui-form" enctype="multipart/form-data" method="post">
+            <!--对应知识点 begin-->
+            <div class="layui-form-item">
+                <label class="layui-form-label">知识点：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="knowledge-point"
+                           placeholder="格式：章节-知识点" type="text">
+                </div>
+            </div>
+            <!--对应知识点 end-->
+            <!-- 题目类型 begin-->
+            <div class="layui-form-item">
+                <label class="layui-form-label">题目类型：</label>
+                <div class="layui-input-block">
+                    <select id="type" lay-filter="category" name="type">
+                        <option value="1">单选题</option>
+                        <option value="2">多选题</option>
+                        <option value="3">填空题</option>
+                        <option value="4">判断题</option>
+                        <option value="5">简答题</option>
+                        <option value="6">计算题</option>
+                        <option value="7">应用题</option>
+                    </select>
+                </div>
+            </div>
+            <!-- 题目类型 end-->
+            <!--图片题-->
+            <div class="layui-form-item">
+                <label class="layui-form-label">图片题：</label>
+                <div class="layui-input-block">
+                    <input lay-filter="is_image" name="is_image" title="是" type="radio" value="true">
+                    <input checked lay-filter="is_image" name="is_image" title="否" type="radio" value="false">
+                </div>
+            </div>
+            <div class="layui-form-item" id="isImage">
+                <label class="layui-form-label">图片上传：</label>
+                <div class="layui-upload">
+                    <input id="image" name="image" type="file"/>
+                </div>
+            </div>
+
+            <!---图片题结束-->
+            <div class="layui-form-item">
+                <label class="layui-form-label">题目主干：</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" name="content" placeholder="请输入题目主干"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">题目问题：</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" lay-verify="required" name="question"
+                              placeholder="请输入问题"></textarea>
+                </div>
+            </div>
+            <!--选择题选项 begin -->
+            <div id="select">
+                <div class="layui-form-item">
+                    <label class="layui-form-label">A：</label>
+                    <div class="layui-input-block">
+                        <input autocomplete="off" class="layui-input" id="select-a" lay-verify="required"
+                               name="select-a"
+                               placeholder="请输入选项内容" type="text">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">B：</label>
+                    <div class="layui-input-block">
+                        <input autocomplete="off" class="layui-input" id="select-b" lay-verify="required"
+                               name="select-b"
+                               placeholder="请输入选项内容" type="text">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">C：</label>
+                    <div class="layui-input-block">
+                        <input autocomplete="off" class="layui-input" id="select-c" lay-verify="required"
+                               name="select-c"
+                               placeholder="请输入选项内容" type="text">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">D：</label>
+                    <div class="layui-input-block">
+                        <input autocomplete="off" class="layui-input" id="select-d" lay-verify="required"
+                               name="select-d"
+                               placeholder="请输入选项内容" type="text">
+                    </div>
+                </div>
+            </div>
+            <!--选择题选项 end-->
+            <!-- 单选题答案 begin-->
+            <div class="layui-form-item" id="single-select-answer">
+                <label class="layui-form-label">答案：</label>
+                <div class="layui-input-block">
+                    <input checked name="single-answer" title="A" type="radio" value="A">
+                    <input name="single-answer" title="B" type="radio" value="B">
+                    <input name="single-answer" title="C" type="radio" value="C">
+                    <input name="single-answer" title="D" type="radio" value="D">
+                </div>
+            </div>
+            <!-- 单选题答案 end-->
+            <!-- 多选题答案 begin-->
+            <div class="layui-form-item" id="multiple-select-answer">
+                <label class="layui-form-label">答案：</label>
+                <div class="layui-input-block">
+                    <input id="multipleAnswer[A]" name="multipleAnswer[A]" title="A" type="checkbox" value="A">
+                    <input id="multipleAnswer[B]" name="multipleAnswer[B]" title="B" type="checkbox" value="B">
+                    <input id="multipleAnswer[C]" name="multipleAnswer[C]" title="C" type="checkbox" value="C">
+                    <input id="multipleAnswer[D]" name="multipleAnswer[D]" title="D" type="checkbox" value="D">
+                </div>
+            </div>
+            <!-- 多选题答案 end-->
+            <!-- 填空题答案 begin-->
+            <div class="layui-form-item" id="fill-answer">
+                <label class="layui-form-label">答案：</label>
+                <div class="layui-input-block">
+                    <input autocomplete="off" class="layui-input" id="answer" name="fill-answer" placeholder="答案请用空格隔开"
+                           type="text">
+                </div>
+            </div>
+            <!-- 填空题答案 end-->
+            <!-- 判断题答案 begin-->
+            <div class="layui-form-item" id="judge-answer">
+                <label class="layui-form-label">答案：</label>
+                <div class="layui-input-block">
+                    <input checked name="judge-answer" title="对" type="radio" value="对">
+                    <input name="judge-answer" title="错" type="radio" value="错">
+                </div>
+            </div>
+            <!-- 判断题答案 end-->
+            <!-- 主观题评分点 begin-->
+            <div class="layui-form-item" id="subjective-answer">
+                <label class="layui-form-label">评分点：</label>
+                <div class="layui-input-block">
+                    <textarea class="layui-textarea" id="point" name="point" placeholder="请输入评分点"></textarea>
+                </div>
+            </div>
+            <!-- 主观题评分点 end-->
+            <div class="layui-form-item">
+                <button class="layui-btn" id="test9" lay-filter="add" lay-submit style="margin-left: 160px;">添加</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script charset="utf-8" src="layui/layui.js"></script>
+<script>
+    layui.use(['form', 'element'], function () {
+        var form = layui.form;
+        var element = layui.element;
+        form.on('select(category)', function (data) {
+            var single = document.getElementById("single-select-answer");
+            var multiple = document.getElementById("multiple-select-answer");
+            var fill = document.getElementById("fill-answer");
+            var judge = document.getElementById("judge-answer");
+            var subjective = document.getElementById("subjective-answer");
+            var answer = document.getElementById("answer");
+            var point = document.getElementById("point");
+            var select1 = document.getElementById("select-a");
+            var select2 = document.getElementById("select-b");
+            var select3 = document.getElementById("select-c");
+            var select4 = document.getElementById("select-d");
+            switch (data.value) {
+                case '1':
+                    document.getElementById("select").style.display = "";
+                    multiple.style.display = "none";
+                    fill.style.display = "none";
+                    judge.style.display = "none";
+                    subjective.style.display = "none";
+                    single.style.display = "";
+                    answer.removeAttribute("lay-verify");
+                    point.removeAttribute("lay-verify");
+                    select1.setAttribute("lay-verify", "required");
+                    select2.setAttribute("lay-verify", "required");
+                    select3.setAttribute("lay-verify", "required");
+                    select4.setAttribute("lay-verify", "required");
+                    break;
+                case '2':
+                    document.getElementById("select").style.display = "";
+                    single.style.display = "none";
+                    multiple.style.display = "";
+                    fill.style.display = "none";
+                    judge.style.display = "none";
+                    subjective.style.display = "none";
+                    answer.removeAttribute("lay-verify");
+                    point.removeAttribute("lay-verify");
+                    select1.setAttribute("lay-verify", "required");
+                    select2.setAttribute("lay-verify", "required");
+                    select3.setAttribute("lay-verify", "required");
+                    select4.setAttribute("lay-verify", "required");
+                    break;
+                case '3':
+                    document.getElementById("select").style.display = "none";
+                    single.style.display = "none";
+                    multiple.style.display = "none";
+                    fill.style.display = "";
+                    judge.style.display = "none";
+                    subjective.style.display = "none";
+                    answer.setAttribute("lay-verify", "required");
+                    point.removeAttribute("lay-verify");
+                    select1.removeAttribute("lay-verify");
+                    select2.removeAttribute("lay-verify");
+                    select3.removeAttribute("lay-verify");
+                    select4.removeAttribute("lay-verify");
+                    break;
+                case '4':
+                    document.getElementById("select").style.display = "none";
+                    single.style.display = "none";
+                    multiple.style.display = "none";
+                    fill.style.display = "none";
+                    judge.style.display = "";
+                    subjective.style.display = "none";
+                    answer.removeAttribute("lay-verify");
+                    point.removeAttribute("lay-verify");
+                    select1.removeAttribute("lay-verify");
+                    select2.removeAttribute("lay-verify");
+                    select3.removeAttribute("lay-verify");
+                    select4.removeAttribute("lay-verify");
+                    break;
+                default:
+                    document.getElementById("select").style.display = "none";
+                    single.style.display = "none";
+                    multiple.style.display = "none";
+                    fill.style.display = "none";
+                    judge.style.display = "none";
+                    subjective.style.display = "";
+                    point.setAttribute("lay-verify", "required");
+                    answer.removeAttribute("lay-verify");
+                    select1.removeAttribute("lay-verify");
+                    select2.removeAttribute("lay-verify");
+                    select3.removeAttribute("lay-verify");
+                    select4.removeAttribute("lay-verify");
+                    break;
+            }
+        });
+        form.on('radio(is_image)', function (data) {
+            if (data.value === 'true') {
+                document.getElementById("isImage").style.display = "";
+            } else {
+                document.getElementById("isImage").style.display = "none";
+            }
+        });
+        //自定义验证规则
+    });
+    layui.use(['form'], function () {
+        var form = layui.form;
+        form.on('submit(add)', function (data) {
+            //向后台发送数据，验证登录信息
+            if (data.field.type == 2) {
+                //判断是否被选择
+                var answerA = document.getElementById("multipleAnswer[A]");
+                var answerB = document.getElementById("multipleAnswer[B]");
+                var answerC = document.getElementById("multipleAnswer[C]");
+                var answerD = document.getElementById("multipleAnswer[D]");
+                var count = 0;
+                if (answerA.checked) {
+                    count++;
+                }
+                if (answerB.checked) {
+                    count++;
+                }
+                if (answerC.checked) {
+                    count++;
+                }
+                if (answerD.checked) {
+                    count++;
+                }
+                if (count < 2) {
+                    alert("请检查复选题答案是否符合要求");
+                    return false;
+                }
+            }
+            var res = data.field;
+            var formData = new FormData;
+            if (data.field.is_image == "对") {
+                //判断图片路径是否正确
+                var fileName = document.getElementById("image").value;
+                var suffixIndex = fileName.lastIndexOf(".");
+                var suffix = fileName.substring(suffixIndex + 1).toUpperCase();
+                if (fileName == null || fileName == "") {
+                    alert("请给图片题上传图片！");
+                    return false;
+                }
+                if (suffix != "JPG" && suffix != "JPEG" && suffix != "PNG") {
+                    alert("不支持该图片格式，请选择JPG、JPEG、PNG格式！");
+                    return false;
+                }
+                formData.append("photo", document.getElementById("image").files[0]);
+                console.log("ssss1q");
+                console.log(res);
+                $.ajax({
+                    url: "/file/upload",
+                    type: 'POST',
+                    async: false,
+                    cache: false,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (m) {
+                        console.log(m);
+                        res["image"] = m.src;
+                        console.log(res);
+                    },
+                    error: function () {
+
+                    }
+                });
+            }
+            console.log("ssss");
+            console.log(res);
+            res["course"] = sessionStorage.getItem("course");
+            $.ajax({
+                url: '/question/add', //请求url
+                data: JSON.stringify(res), //请求参数，类似于username=xxx&password=xxx
+                type: 'post', //请求方式
+                dataType: 'json', //返回值的类型
+                contentType: 'application/json;charset=utf-8',
+                success: function (result) {  //服务器成功返回时执行的函数
+                    console.log(JSON.stringify(result));
+                    if (result.code == 2000) {
+                        alert("添加成功！");
+                        window.location.href = "question_add.html";
+                    } else {
+                        alert("添加失败!");
+                    }
+                }
+            });
+
+            return false;
+        });
+    });
+</script>
+</body>
+</html>

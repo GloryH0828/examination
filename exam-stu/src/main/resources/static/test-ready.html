@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="lay/layui/css/layui.css" media="all" rel="stylesheet">
+    <script charset="utf-8" src="lay/layui/layui.js"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+    <script type="text/javascript" src="http://pv.sohu.com/cityjson?ie=utf-8"></script>
+    <script type="text/javascript">
+    var ip_addr=returnCitySN.cip;
+    console.log(ip_addr);
+    </script>
+<body class="layui-layout-body">
+<div class="layui-container" style="margin-top: 50px;width: 700px;">
+    <form action="" class="layui-form" method="POST">
+        <div class="layui-form-item" style="margin-left: 50px;">
+            <label class="layui-form-label">条件</label>
+            <div class="layui-inline" style="width: 200px;">
+                <input class="layui-input" name="index" placeholder="请输入试卷名称" type="text">
+            </div>
+            <div class="layui-inline" style="width: 200px;">
+                <button class="layui-btn" lay-filter="find" lay-submit>搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <table class="layui-table" id="test" lay-filter="test"></table>
+    <script id="barDemo1" type="text/html">
+        <a class="layui-btn layui-btn-xs" lay-event="addTest">进入考试</a>
+    </script>
+    <script charset="utf-8" src="layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'table'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            form.on('submit(find)', function (data) {
+                //获取 class_id 和 course_nam
+                var index = data.field.index;
+                var studentId = sessionStorage.getItem("studentId");
+                table.reload('test', {
+                    url: '/question/test/findTestReadyByIndex'
+                    , where: {
+                        index: index,
+                        studentId: studentId
+                    } //设定异步数据接口的额外参数
+                    //,height: 300
+                });
+                return false;
+            });
+        });
+        layui.use(['table', 'transfer', 'layer', 'util', 'form', 'laydate'], function () {
+            var table = layui.table;
+            var transfer = layui.transfer;
+            var layer = layui.layer;
+            var util = layui.util;
+            var form = layui.form;
+            var laydate = layui.laydate;
+            table.render({
+                elem: '#test'
+                , url: '/question/test/findTestReadyByIndex'
+                , where: {
+                    index: null,
+                    studentId: sessionStorage.getItem("studentId")
+                }
+                , title: '学生列表'
+                , cols: [
+                    [
+                        {field: 'test_id', width: 120, title: '试卷编号', sort: true}
+                        , {field: 'test_name', width: 100, title: '试卷名称'}
+                        , {field: 'test_begin_time', width: 180, title: '开始时间'}
+                        , {field: 'test_end_time', width: 180, title: '结束时间'}
+                        , {fixed: 'right', title: '进入考试', toolbar: '#barDemo1', width: 90}
+                    ]
+                ]
+                , page: false
+            });
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'addTest') {
+                    $.ajax({
+                        async: false,
+                        url: '/question/test/verifyTest/' + sessionStorage.getItem("studentId") + '/' + data.test_id, //请求url
+                        data: {
+                            "ip":ip_addr
+                        }, //请求参数，类似于username=xxx&password=xxx
+                        type: 'get', //请求方式
+                        dataType: 'json', //返回值的类型
+                        contentType: 'application/json;charset=utf-8',
+                        success: function (result) {  //服务器成功返回时执行的函数
+                            console.log(JSON.stringify(result));
+                            if (result.code == 2000) {
+                                alert("验证成功，即将进入考试");
+                                window.open("/question/test/join/" + data.test_id + "/" + sessionStorage.getItem("studentId"), "_blank");
+                            } else if (result.code == 2017) {
+                                alert("验证失败，请稍后重试");
+                            } else {
+                                alert("验证失败\n" + result.msg);
+                            }
+                        },
+                        error: function () {
+                            alert("网络错误，请稍后重试！")
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+</div>
+<script id="popUpdate" type="text/html">
+    <div class="layui-form-mid">
+        <label class="layui-form-label">结束时间：</label>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input" name="endTime" id="endTime"
+                   placeholder="yyyy-MM-dd HH:mm:ss">
+        </div>
+
+    </div>
+    <div class="layui-form-mid ">
+        <button class="layui-btn" id="submit" style="margin-left: 160px;">确认</button>
+    </div>
+
+</script>
+<script id="addStu" type="text/html">
+    <div class="layui-form-mid">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>考生信息列表</legend>
+        </fieldset>
+        <div id="add-stu" class="demo-transfer"></div>
+
+    </div>
+    <div class="layui-form-mid">
+        <button class="layui-btn" id="addToTest" style="margin-left: 160px;">确认</button>
+    </div>
+</script>
+<script id="addTea" type="text/html">
+    <div class="layui-form-mid">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>考生信息列表</legend>
+        </fieldset>
+        <div id="add-tea" class="demo-transfer"></div>
+
+    </div>
+    <div class="layui-form-mid">
+        <button class="layui-btn" id="addForTest" style="margin-left: 160px;">确认</button>
+    </div>
+</script>
+<script>
+    //二级菜单联动
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

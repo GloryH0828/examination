@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="lay/layui/css/layui.css" media="all" rel="stylesheet">
+    <script charset="utf-8" src="lay/layui/layui.js"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+    <div class="layui-container" style="width:800px;height: 330px;padding-top: 60px;">
+        <form action="" class="layui-form" method="post">
+            <div class="layui-form-item">
+                <label class="gard layui-form-label">试卷名：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="name"
+                           placeholder="请输入试卷名称"
+                           type="text">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="gard layui-form-label">开始时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="beginTime" lay-verify="required" name="beginTime"
+                           placeholder="yyyy-MM-dd HH:mm:ss"
+                           type="text">
+                </div>
+                <label class="layui-form-label">结束时间：</label>
+                <div class="layui-input-inline">
+                    <input class="layui-input" id="endTime" lay-verify="required" name="endTime"
+                           placeholder="yyyy-MM-dd HH:mm:ss"
+                           type="text">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title ">
+                    <legend>单选题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="single"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="singleScore"
+                           placeholder="请输入每题分值" type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>多选题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="multiple"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="multipleScore"
+                           placeholder="请输入每题分值" type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>填空题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="fill"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="fillScore"
+                           placeholder="请输入每题分值"
+                           type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>判断题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="judge"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="judgeScore"
+                           placeholder="请输入每题分值" type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>简答题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="subjectiveOne"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="subjectiveOneScore"
+                           placeholder="请输入每题分值" type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>计算题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="subjectiveTwo"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="subjectiveTwoScore"
+                           placeholder="请输入每题分值" type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <fieldset class="layui-elem-field layui-field-title">
+                    <legend>应用题</legend>
+                </fieldset>
+                <div class="demo-transfer" id="subjectiveThree"></div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">每题分值：</label>
+                <div class="layui-input-inline">
+                    <input autocomplete="off" class="layui-input" lay-verify="required" name="subjectiveThreeScore"
+                           placeholder="请输入每题分值" type="number">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-filter="creat" lay-submit style="margin-left: 160px;">添加</button>
+            </div>
+        </form>
+    </div>
+</div>
+<script>
+    var single = [];
+    var multiple = [];
+    var fill = [];
+    var judge = [];
+    var subjectiveOne = [];
+    var subjectiveTwo = [];
+    var subjectiveThree = [];
+    var course = sessionStorage.getItem("course");
+    var teacher = sessionStorage.getItem("id");
+    $.ajax({
+        url: '/question/makeTest/getData/' + course, //请求url
+        data: '', //请求参数，类似于username=xxx&password=xxx
+        type: 'get', //请求方式
+        dataType: 'json', //返回值的类型
+        contentType: 'application/json;charset=utf-8',
+        success: function (result) {  //服务器成功返回时执行的函数
+            console.log(JSON.stringify(result));
+            if (result.code == 2000) {
+                single = result.single;
+                multiple = result.multiple;
+                fill = result.fill;
+                judge = result.judge;
+                subjectiveOne = result.subjectiveOne;
+                subjectiveTwo = result.subjectiveTwo;
+                subjectiveThree = result.subjectiveThree;
+                layui.use(['transfer', 'layer', 'util'], function () {
+                    var $ = layui.$;
+                    var transfer = layui.transfer;
+                    var layer = layui.layer;
+                    var util = layui.util;
+                    //显示搜索框
+                    transfer.render({
+                        elem: '#single'
+                        , data: single
+                        , title: ['单选题（未选）', '单选题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'single'
+                    })
+                    transfer.render({
+                        elem: '#multiple'
+                        , data: multiple
+                        , title: ['多选题（未选）', '多选题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'multiple'
+                    })
+                    transfer.render({
+                        elem: '#fill'
+                        , data: fill
+                        , title: ['填空题（未选）', '填空题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'fill'
+                    })
+                    transfer.render({
+                        elem: '#judge'
+                        , data: judge
+                        , title: ['判断题（未选）', '判断题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'judge'
+                    })
+                    transfer.render({
+                        elem: '#subjectiveOne'
+                        , data: subjectiveOne
+                        , title: ['简答题（未选）', '简答题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'subjectiveOne'
+                    })
+                    transfer.render({
+                        elem: '#subjectiveTwo'
+                        , data: subjectiveTwo
+                        , title: ['计算题（未选）', '计算题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'subjectiveTwo'
+                    })
+                    transfer.render({
+                        elem: '#subjectiveThree'
+                        , data: subjectiveThree
+                        , title: ['应用题（未选）', '应用题（已选）']
+                        , showSearch: true
+                        , width: 300
+                        , id: 'subjectiveThree'
+                    })
+                });
+            } else {
+                alert("题目列表加载失败");
+            }
+        },
+        error: function () {
+            alert("题目列表加载失败");
+        }
+    });
+    layui.use(['transfer', 'layer', 'util', 'form', 'laydate'], function () {
+        var $ = layui.$;
+        var transfer = layui.transfer;
+        var layer = layui.layer;
+        var util = layui.util;
+        var form = layui.form;
+
+        var laydate = layui.laydate;
+        //日期时间选择器
+        laydate.render({
+            elem: '#beginTime'
+            , type: 'datetime'
+        });
+        //日期时间选择器
+        laydate.render({
+            elem: '#endTime'
+            , type: 'datetime'
+        });
+        form.on('submit(creat)', function (data) {
+            var res = data.field;
+            console.log(res);
+            if (new Date(res.endTime).getTime() - new Date(res.beginTime).getTime() <= 0) {
+                alert("考试时间有误，请检查");
+                return false;
+            }
+            if (data.field.singleScore <= 0 || data.field.multipleScore <= 0 || data.field.fillScore <= 0 || data.field.judgeScore <= 0 || data.field.subjectiveOneScore <= 0 || data.field.subjectiveTwoScore <= 0 || data.field.subjectiveThreeScore <= 0) {
+                alert("题目分值必须大于零");
+                return false;
+            }
+            res["single"] = transfer.getData('single');
+            res["multiple"] = transfer.getData('multiple');
+            res["fill"] = transfer.getData('fill');
+            res["judge"] = transfer.getData('judge');
+            res["subjectiveOne"] = transfer.getData('subjectiveOne');
+            res["subjectiveTwo"] = transfer.getData('subjectiveTwo');
+            res["subjectiveThree"] = transfer.getData('subjectiveThree');
+            res["course"] = sessionStorage.getItem("course");
+            res["teacher"] = sessionStorage.getItem("id");
+            $.ajax({
+                url: '/question/makeTest/hand', //请求url
+                data: JSON.stringify(res), //请求参数，类似于username=xxx&password=xxx
+                type: 'post', //请求方式
+                dataType: 'json', //返回值的类型
+                contentType: 'application/json;charset=utf-8',
+                success: function (result) {  //服务器成功返回时执行的函数
+                    console.log(JSON.stringify(result));
+                    if (result.code == 2000) {
+                        alert("组卷成功，将跳转到试卷列表");
+                        window.location.href = "question_add.html";
+                    } else {
+                        alert("添加失败!\n" + result.msg);
+                    }
+                }
+            });
+
+            return false;
+        });
+
+    });
+</script>
+</body>
+</html>

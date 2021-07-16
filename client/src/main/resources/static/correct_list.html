@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="/lay/layui/css/layui.css" media="all" rel="stylesheet">
+    <script charset="utf-8" src="/lay/layui/layui.js"></script>
+    <script src="/js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-container" style="margin-top: 50px;width: 700px;">
+    <table class="layui-table" lay-even>
+        <colgroup>
+            <col width="150">
+            <col width="200">
+            <col width="100">
+            <col width="100">
+        </colgroup>
+        <thead>
+        <tr>
+            <th>学生编号</th>
+            <th>学生学号</th>
+            <th>学生姓名</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="list:${list}">
+            <td th:text="${list.student_id}"></td>
+            <td th:text="${list.student_username}"></td>
+            <td th:text="${list.student_name}"></td>
+            <td><a class="layui-btn layui-btn-xs" th:onclick="|intoCorrect(${list.student_id})|">进入批改</a> </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script type="text/javascript">
+    function intoCorrect(studentId){
+        window.open("/question/test/correct/" + studentId + "/" + sessionStorage.getItem("testId")+"/"+sessionStorage.getItem("id"), "_blank");
+    }
+    $(function () {
+        $.ajax({
+            url: '/question/test/getCorrecting/' + sessionStorage.getItem("id") + '/' + sessionStorage.getItem("testId"), //请求url
+            data: '', //请求参数，类似于username=xxx&password=xxx
+            type: 'get', //请求方式
+            dataType: 'json', //返回值的类型
+            contentType: 'application/json;charset=utf-8',
+            success: function (result) {  //服务器成功返回时执行的函数
+                console.log(result);
+                if (result.code === 2000) {
+                    if (result.studentId != null && result.studentId !== ""){
+                        alert("检测到您有未批改完的试卷，请您先完成批改。");
+                        intoCorrect(result.studentId);
+                    }
+                }
+            }
+        });
+    });
+    /*function alertLayer(){
+        layui.use(['layer'], function () {
+            var layer = layui.layer;
+            layer.confirm('作废后将无法取消，确定要作废该学生的试卷吗？', function (index) {
+                console.log("确定");
+            });
+        });
+    }*/
+</script>
+</body>
+</html>

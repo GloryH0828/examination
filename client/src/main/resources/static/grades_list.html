@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="/layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="/lay//layui/layui.js" type="text/javascript"></script>
+    <script src="/js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-container" style="margin-top: 50px;width: 1000px;">
+    <form action="" class="layui-form" method="POST">
+        <div class=" layui-form-item" style="margin-left: 100px;">
+            <label class="gard layui-form-label">题目类型</label>
+            <div class="layui-input-inline">
+                <select lay-search name="type" id="type">
+                    <option value="1">按姓名</option>
+                    <option value="2">按学号</option>
+                </select>
+            </div>
+            <label class="layui-form-label">关键字</label>
+            <div class="layui-inline" style="width: 210px;">
+                <input class="layui-input" name="index" placeholder="请输入关键字" type="text" id="index">
+            </div>
+            <div class="layui-inline" style="width: 200px;">
+                <button class="layui-btn" lay-filter="find" lay-submit>搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <table class="layui-hide" id="test" style="width: 950px;" lay-filter="test"></table>
+    <script id="barDemo" type="text/html">
+        <a class="layui-btn layui-btn-xs" lay-event="intoCorrect">详细信息</a>
+    </script>
+    <script charset="utf-8" src="/lay/layui/layui.js"></script>
+
+
+</div>
+<script>
+    //二级菜单联动
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+<div class="layer-footer"
+     style="z-index: 10; position: fixed; text-align: right; margin-left: -10%; bottom: 0; width:100%; height:50px">
+    <button type="button" class="layui-btn layui-btn-lg layui-btn-primary layui-bg-orange" lay-submit
+            lay-filter="formExport">列表导出
+    </button>
+    <button type="button" class="layui-btn layui-btn-lg layui-btn-primary layui-bg-blue" lay-submit
+            lay-filter="detailExport">明细导出
+    </button>
+    <button type="button" class="layui-btn layui-btn-lg layui-btn-primary layui-bg-cyan" lay-submit
+            lay-filter="countExport">统计分析导出
+    </button>
+</div>
+</body>
+<script>
+    layui.use(['table', 'form'], function () {
+        var table = layui.table;
+        var form = layui.form;
+        var exportData;
+        var ins;
+        form.on('submit(find)', function (data) {
+            //获取知识点
+            var index = $("#index").val();
+            var type = $("#type").val();
+            if (index.length === 0 ) {
+                index = "null";
+                type = 0;
+            }
+            var ins1 = table.reload('test', {
+                url: '/question/test/findGradesByTestId/' + [[${testId}]]
+                , where: {
+                    index: index,
+                    type: type
+                } //设定异步数据接口的额外参数
+                //,height: 300
+                , done: function (res, curr, count) {
+                    exportData = res.data;
+                    ins = ins1.config.id;
+                }
+            });
+            return false;
+        });
+        form.on('submit(formExport)', function (res) {
+            table.exportFile(ins, exportData, 'xls');
+        });
+        form.on('submit(detailExport)', function (res) {
+            window.open("/file/detailExport/" + [[${testId}]], "_blank");
+        });
+        form.on('submit(countExport)', function (res) {
+            window.open("/file/countExport/" + [[${testId}]], "_blank");
+        });
+        var ins2 = table.render({
+            elem: '#test'
+            , url: '/question/test/findGradesByTestId/' + [[${testId}]]
+            , where: {
+                "index": "null",
+                "type": 0
+            }
+            , title: '成绩列表'
+            , cols: [
+                [
+                    {field: 'student_id', width: 120, title: '学生编号', sort: true}
+                    , {
+                    field: 'class_name', width: 150, title: '所在班级'
+                }
+                    , {
+                    field: 'student_name', width: 100, title: '学生姓名'
+                }
+                    , {
+                    field: 'student_username', width: 150, title: '学生学号'
+                }
+                    , {
+                    field: 'score', width: 100, title: '考试得分'
+                }
+                    , {field: 'teacher_name', width: 100, title: '批改教师'}
+                    , {field: 'teacher_username', width: 150, title: '教师工号'}
+                    , {
+                    field: 'test_status', width: 100, title: '试卷状态', templet: function (data) {
+                        var index;
+                        switch (data.test_status) {
+                            case 0:
+                                index = "未批改";
+                                break;
+                            case 1:
+                                index = "批改中";
+                                break;
+                            case 2:
+                                index = "已批改";
+                                break;
+                            case 3:
+                                index = "未参加";
+                                break;
+                        }
+                        if (data.is_cancel === 1) {
+                            index = "已作废";
+                        }
+                        return index;
+                    }
+                }
+                    , {fixed: 'right', title: '操作', toolbar: '#barDemo', width: 140}
+                ]
+            ]
+            , done: function (res, curr, count) {
+                exportData = res.data;
+                ins = ins2.config.id;
+            }
+        });
+
+        //监听行工具事件
+        table.on('tool(test)', function (obj) {
+            var data = obj.data;
+            if (obj.event === 'intoCorrect') {
+                if (data.test_status === 3){
+                    alert("未查询到该学生详细考试信息，无法查看");
+                }else {
+                    window.open("/question/test/correct/" + data.student_id + "/" + [[${testId}]] + "/" + sessionStorage.getItem("id"), "_blank");
+                }
+            }
+        });
+    });
+</script>
+</html>

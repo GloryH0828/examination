@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="layui/layui.js" type="text/javascript"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-container" style="margin-top: 50px;width: 750px;">
+    <form action="" class="layui-form" method="POST">
+        <div class="layui-form-item" style="margin-left: 150px;">
+            <label class="layui-form-label">班级</label>
+            <div class="layui-inline">
+                <select id="classList" lay-search name="class_id">
+                    <option value="">所有班级</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 150px;">
+            <label class="layui-form-label">按课程</label>
+            <div class="layui-inline">
+                <input class="layui-input" name="index" placeholder="请输入课程名" style="width: 215px;" type="text">
+            </div>
+            <div class="layui-inline" style="width: 200px;">
+                <button class="layui-btn" lay-filter="find" lay-submit>搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <table class="layui-table" id="test" lay-filter="test" style="width: 850px"></table>
+    <script charset="utf-8" src="layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'table'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            form.on('submit(find)', function (data) {
+                //获取 class_id 和 course_name
+                var id = data.field.class_id;
+                var index = data.field.index;
+                if (id.length == 0) {
+                    id = 0;
+                }
+                if (index.length == 0) {
+                    index = "NaN";
+                }
+                table.reload('test', {
+                    url: '/class/findByIndex'
+                    , where: {
+                        class_id: id,
+                        index: index
+                    } //设定异步数据接口的额外参数
+                    //,height: 300
+                    , page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+                return false;
+            });
+        });
+        window.onload = function () {
+            $.ajax({
+                url: '/class/getList', //请求url
+                data: '', //请求参数，类似于username=xxx&password=xxx
+                type: 'get', //请求方式
+                dataType: 'json', //返回值的类型
+                success: function (result) {  //服务器成功返回时执行的函数
+                    console.log(JSON.stringify(result.list));
+                    $("#classList").empty().append("<option value=''>所有班级</option>");
+                    $.each(result.list, function (index, content) {
+                        $("#classList").append("<option value=\"" + content.class_id + "\">" + content.class_name + "</option>");
+                    });
+                    layui.use('form', function () {
+                        var form = layui.form;//高版本建议把括号去掉，有的低版本，需要加()
+                        form.render('select');
+                        //form.render();
+                    });
+
+                }
+            });
+        }
+        layui.use('table', function () {
+            var table = layui.table;
+
+            table.render({
+                elem: '#test'
+                , url: '/class/findAll'
+                , title: '班级列表'
+                , cols: [
+                    [
+                        {field: 'id', width: 100, title: '编号', sort: true}
+                        , {field: 'class_name', width: 200, title: '班级名'}
+                        , {
+                        field: 'course_name', width: 200, title: '课程名', templet: function (data) {
+                            return data.course.course_name;
+                        }
+                    }
+                        , {
+                        field: 'teacher_name', title: '教师名', width: 200, templet: function (data) {
+                            return data.teacher.teacher_name;
+                        }
+                    }
+                    ]
+                ]
+                , page: true
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确定要删除吗？', function (index) {
+                        window.location.href = "/menu/deleteById/" + data.id;
+                        layer.close(index);
+                    });
+                } else if (obj.event === 'edit') {
+                    window.location.href = "/menu/findById/" + data.id;
+                }
+            });
+        });
+    </script>
+
+</div>
+<script>
+    //二级菜单联动
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

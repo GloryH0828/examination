@@ -1,0 +1,24 @@
+server:
+  port: 8080
+spring:
+  thymeleaf:
+    prefix: classpath:/static/
+    suffix: .html
+  application:
+    name: question
+  datasource:
+    url: jdbc:mysql://localhost:3306/online_examination?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: 1234
+mybatis:
+  mapper-locations: classpath:/mapping/*.xml
+  type-aliases-package: com.gloryh.entity
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

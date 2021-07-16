@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html >
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="lay/layui/css/layui.css" media="all" rel="stylesheet">
+    <script charset="utf-8" src="lay/layui/layui.js"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-container" style="margin-top: 50px;width: 700px;">
+    <form action="" class="layui-form" method="POST">
+        <div class="layui-form-item" style="margin-left: 50px;">
+            <label class="layui-form-label">条件</label>
+            <div class="layui-inline" style="width: 200px;">
+                <input class="layui-input" name="index" placeholder="请输入试卷名称" type="text">
+            </div>
+            <div class="layui-inline" style="width: 200px;">
+                <button class="layui-btn" lay-filter="find" lay-submit>搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <table class="layui-table" id="test" lay-filter="test"></table>
+    <script id="barDemo1" type="text/html">
+        <a class="layui-btn layui-btn-xs" lay-event="correct">批改</a>
+    </script>
+    <script id="barDemo2" type="text/html">
+        <a class="layui-btn layui-btn-xs" lay-event="stu-manage">考生列表</a>
+    </script>
+    <script id="barDemo3" type="text/html">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="addStu">添加考生</a>
+    </script>
+    <script id="barDemo4" type="text/html">
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="addTea">添加教师</a>
+    </script>
+    <script charset="utf-8" src="layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'table'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            form.on('submit(find)', function (data) {
+                //获取 class_id 和 course_nam
+                var index = data.field.index;
+                var teacher = sessionStorage.getItem("id");
+                if (index.length == 0) {
+                    index = "null";
+                }
+                table.reload('test', {
+                    url: '/question/test/findMeCorrectByIndex'
+                    , where: {
+                        index: index,
+                        teacherId: teacher
+                    } //设定异步数据接口的额外参数
+                    //,height: 300
+                });
+                return false;
+            });
+        });
+        layui.use(['table', 'transfer', 'layer', 'util', 'form', 'laydate'], function () {
+            var table = layui.table;
+            var transfer = layui.transfer;
+            var layer = layui.layer;
+            var util = layui.util;
+            var form = layui.form;
+            var laydate = layui.laydate;
+            table.render({
+                elem: '#test'
+                , url: '/question/test/getMeCorrect/' + sessionStorage.getItem("id")
+                , title: '学生列表'
+                , cols: [
+                    [
+                        {field: 'test_id', width: 120, title: '试卷编号', sort: true}
+                        , {field: 'test_name', width: 100, title: '试卷名称'}
+                        , {field: 'test_begin_time', width: 180, title: '开始时间'}
+                        , {field: 'test_end_time', width: 180, title: '结束时间'}
+                        , {fixed: 'right', title: '进入批改', toolbar: '#barDemo1', width: 120}
+                    ]
+                ]
+                , page: false
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+
+                if (obj.event === 'correct') {
+                    var endTime=new Date(data.test_end_time).getTime();
+                    var now=new Date().getTime();
+                    console.log(endTime);
+                    console.log(now);
+                    if (now>endTime){
+                        alert("即将进入批改列表");
+                        sessionStorage.setItem("testId", data.test_id);
+                        window.location.href = "/question/test/correctList/"+data.test_id;
+                    }else {
+                        alert("对不起，考试未结束！");
+                    }
+
+                }
+            });
+        });
+    </script>
+
+</div>
+<script id="popUpdate" type="text/html">
+    <div class="layui-form-mid">
+        <label class="layui-form-label">结束时间：</label>
+        <div class="layui-input-inline">
+            <input type="text" class="layui-input" name="endTime" id="endTime"
+                   placeholder="yyyy-MM-dd HH:mm:ss">
+        </div>
+
+    </div>
+    <div class="layui-form-mid ">
+        <button class="layui-btn" id="submit" style="margin-left: 160px;">确认</button>
+    </div>
+
+</script>
+<script id="addStu" type="text/html">
+    <div class="layui-form-mid">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>考生信息列表</legend>
+        </fieldset>
+        <div id="add-stu" class="demo-transfer"></div>
+
+    </div>
+    <div class="layui-form-mid">
+        <button class="layui-btn" id="addToTest" style="margin-left: 160px;">确认</button>
+    </div>
+</script>
+<script id="addTea" type="text/html">
+    <div class="layui-form-mid">
+        <fieldset class="layui-elem-field layui-field-title">
+            <legend>考生信息列表</legend>
+        </fieldset>
+        <div id="add-tea" class="demo-transfer"></div>
+
+    </div>
+    <div class="layui-form-mid">
+        <button class="layui-btn" id="addForTest" style="margin-left: 160px;">确认</button>
+    </div>
+</script>
+<script>
+    //二级菜单联动
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="layui/layui.js" type="text/javascript"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+    <script src="js/echarts.min.js"></script>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px">
+    <div style="margin: auto">
+        <div id="sector" style="width: 600px;height: 400px;"></div>
+        <div id="chapter" style="height:600px;width: 600px"></div>
+        <div id="knowledge" style="height: 600px;width: 600px"></div>
+    </div>
+
+    <script type="text/javascript">
+        window.onload = function () {
+            $.ajax({
+                url: '/question/echarts?courseId='+sessionStorage.getItem("course"), //请求url
+                data: '', //请求参数，类似于username=xxx&password=xxx
+                type: 'get', //请求方式
+                dataType: 'json', //返回值的类型
+                success: function (result) {  //服务器成功返回时执行的函数
+                    console.log(result);
+                    sector(result.type.list);
+                    var chartDom1 = document.getElementById('chapter');
+                    var chartDom2 = document.getElementById('knowledge');
+                    chapterOrKnowledge(result.chapter, chartDom1, "各章节题型题目分布");
+                    chapterOrKnowledge(result.knowledge, chartDom2, "各知识点题型题目分布");
+
+                }
+            });
+        }
+
+        function chapterOrKnowledge(data, chartDom, text) {
+
+            var myChart = echarts.init(chartDom);
+            var option;
+
+            option = {
+                title: {
+                    text: text,
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {            // Use axis to trigger tooltip
+                        type: 'shadow'        // 'shadow' as default; can also be 'line' or 'shadow'
+                    }
+                },
+                legend: {
+                    top: '5%',
+                    data: ['单选题', '多选题', '填空题', '判断题', '简答题', '计算题', '应用题']
+                },
+                grid: {
+                    top: '9%',
+                    left: '3%',
+                    right: '4%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: data.yAxis
+                },
+                series: [
+                    {
+                        name: '单选题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[0]
+                    },
+                    {
+                        name: '多选题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[1]
+                    },
+                    {
+                        name: '填空题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[2]
+                    },
+                    {
+                        name: '判断题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[3]
+                    },
+                    {
+                        name: '简答题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[4]
+                    },
+                    {
+                        name: '计算题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[5]
+                    },
+                    {
+                        name: '应用题',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true
+                        },
+                        emphasis: {
+                            focus: 'series'
+                        },
+                        data: data.data[6]
+                    }
+                ]
+            };
+
+            option && myChart.setOption(option);
+        }
+
+        function sector(list) {
+            var chartDom = document.getElementById('sector');
+            var sectorChart = echarts.init(chartDom);
+            var optionSector;
+
+            optionSector = {
+                title: {
+                    text: '各题型题目数量分布',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                legend: {
+                    orient: 'vertical',
+                    left: 'left',
+                },
+                series: [
+                    {
+                        name: '分布情况',
+                        type: 'pie',
+                        radius: '50%',
+                        data: list,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
+            };
+
+            optionSector && sectorChart.setOption(optionSector);
+        }
+    </script>
+    <script charset="utf-8" src="layui/layui.js"></script>
+    <script>
+        layui.use('table', function () {
+            var table = layui.table;
+        });
+    </script>
+
+</div>
+<script>
+    //二级菜单联动
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

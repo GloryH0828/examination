@@ -1,0 +1,18 @@
+server:
+  port: 8011
+spring:
+  thymeleaf:
+    prefix: classpath:/static/
+    suffix: .html
+  application:
+    name: exam-stu
+  jackson:
+    default-property-inclusion: non_null
+  resources:
+    static-locations: classpath:/static,file:D:\Desktop\pictures
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

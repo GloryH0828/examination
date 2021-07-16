@@ -1,0 +1,22 @@
+server:
+  port: 8050
+spring:
+  thymeleaf:
+    prefix: classpath:/static/
+    suffix: .html
+  application:
+    name: course
+  datasource:
+    url: jdbc:mysql://localhost:3306/online_examination?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: 1234
+mybatis:
+  mapper-locations: classpath:/mapping/*.xml
+  type-aliases-package: com.gloryh.entity
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true

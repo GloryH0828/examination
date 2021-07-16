@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gloryh.mapper.TeacherMapper">
+    <resultMap id="teacherMap" type="com.gloryh.entity.TeacherDTO">
+        <id property="id" column="id"/>
+        <result property="teacher_id" column="teacher_id"/>
+        <result property="teacher_name" column="teacher_name"/>
+        <result property="teacher_username" column="teacher_username"/>
+        <result property="teacher_sex" column="teacher_sex"/>
+        <result property="teacher_email" column="teacher_email"/>
+        <result property="teacher_phone" column="teacher_phone"/>
+        <result property="classes.class_name" column="class_name"/>
+        <result property="course.course_name" column="course_name"/>
+    </resultMap>
+    <insert id="add" parameterType="com.gloryh.entity.Teacher" useGeneratedKeys="true" keyProperty="teacher_id"
+            keyColumn="teacher_id">
+        INSERT INTO teacher(teacher_username, teacher_name, teacher_sex, teacher_password, teacher_phone, teacher_email)
+        VALUES (#{teacher_username}, #{teacher_name}, #{teacher_sex}, #{teacher_password}, #{teacher_phone},
+                #{teacher_email});
+    </insert>
+    <insert id="addCourseTeacher" parameterType="com.gloryh.entity.CourseTeacher" useGeneratedKeys="true"
+            keyProperty="id" keyColumn="id">
+        INSERT INTO course_teacher(course_id, teacher_id)
+        VALUES (#{course_id}, #{teacher_id})
+    </insert>
+    <insert id="addClassCourseTeacher">
+        INSERT INTO class_course_teacher(c_id, c_t_id)
+        VALUES (#{class_id}, #{c_t_id})
+    </insert>
+    <select id="findIdByUsername" resultType="java.lang.Integer">
+        SELECT teacher_id
+        FROM teacher
+        WHERE teacher_username = #{username}
+    </select>
+    <select id="findAll" resultMap="teacherMap">
+        SELECT t.*, c1.class_name, c2.course_name
+        FROM teacher AS t,
+             class AS c1,
+             course AS c2,
+             course_teacher AS ct,
+             class_course_teacher AS cct
+        WHERE t.teacher_id = ct.teacher_id
+          AND ct.course_id = c2.course_id
+          AND ct.c_t_id = cct.c_t_id
+          AND cct.c_id = c1.class_id
+            LIMIT #{index}
+            , #{limit}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM teacher AS t,
+             class AS c1,
+             course AS c2,
+             course_teacher AS ct,
+             class_course_teacher AS cct
+        WHERE t.teacher_id = ct.teacher_id
+          AND ct.course_id = c2.course_id
+          AND ct.c_t_id = cct.c_t_id
+          AND cct.c_id = c1.class_id
+    </select>
+    <select id="findByIndex" resultMap="teacherMap">
+        SELECT t.*,c1.class_name,c2.course_name FROM teacher AS t,class AS c1,course AS c2,course_teacher AS
+        ct,class_course_teacher AS cct
+        WHERE
+        <if test="course_id != null and course_id !=0">
+            c2.course_id = #{course_id}
+            AND
+        </if>
+        <if test="keywords != null and keywords!='NaN'">
+            <if test="type == 'username'">
+                t.teacher_username=#{keywords}
+            </if>
+            <if test="type == 'name'">
+                t.teacher_name LIKE CONCAT(CONCAT('%',#{keywords},'%'))
+            </if>
+            AND
+        </if>
+        t.teacher_id=ct.teacher_id
+        AND ct.course_id=c2.course_id
+        AND ct.c_t_id = cct.c_t_id
+        AND cct.c_id = c1.class_id
+        LIMIT #{index},#{limit}
+    </select>
+    <select id="countByIndex" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM teacher AS t,class AS c1,course AS c2,course_teacher AS ct,class_course_teacher AS cct
+        WHERE
+        <if test="course_id != null and course_id !=0">
+            c2.course_id = #{course_id}
+            AND
+        </if>
+        <if test="keywords != null and keywords!='NaN'">
+            <if test="type == 'username'">
+                t.teacher_username=#{keywords}
+            </if>
+            <if test="type == 'name'">
+                t.teacher_name LIKE CONCAT(CONCAT('%',#{keywords},'%'))
+            </if>
+            AND
+        </if>
+        t.teacher_id=ct.teacher_id
+        AND ct.course_id=c2.course_id
+        AND ct.c_t_id = cct.c_t_id
+        AND cct.c_id = c1.class_id
+    </select>
+</mapper>

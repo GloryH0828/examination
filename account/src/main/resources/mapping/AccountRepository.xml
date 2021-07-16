@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gloryh.mapper.AccountMapper">
+    <update id="editTeacherPassword">
+        UPDATE teacher SET teacher_password =#{newPassword} WHERE teacher_username =#{username}
+    </update>
+    <update id="editStudentPassword">
+        UPDATE student SET  student_password =#{newPassword} WHERE student_username=#{username}
+    </update>
+    <select id="teacherLogin" resultType="com.gloryh.entity.Teacher">
+        SELECT *
+        FROM teacher
+        WHERE teacher_username = #{username}
+          AND teacher_password = #{password} LIMIT 1
+    </select>
+    <select id="adminLogin" resultType="com.gloryh.entity.Admin">
+        SELECT *
+        FROM admin
+        WHERE admin_username = #{username}
+          AND admin_password = #{password} LIMIT 1
+    </select>
+    <select id="findCourses" resultType="com.gloryh.entity.CourseTeacher">
+        SELECT c_t_id, course_id
+        FROM course_teacher
+        WHERE teacher_id = #{teacher_id}
+    </select>
+    <select id="findClass" resultType="java.lang.Integer">
+        SELECT c_id
+        FROM class_course_teacher
+        WHERE c_t_id = #{c_t_id}
+    </select>
+    <select id="studentLogin" resultType="com.gloryh.entity.Student">
+        SELECT *
+        FROM student
+        WHERE student_username = #{username}
+          AND student_password = #{password} LIMIT 1
+    </select>
+</mapper>

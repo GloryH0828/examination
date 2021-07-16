@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+
+    <title>在线考试界面</title>
+    <link href="/css/main.css" rel="stylesheet" type="text/css">
+    <link href="/css/iconfont.css" rel="stylesheet" type="text/css">
+    <link href="/css/test.css" rel="stylesheet" type="text/css">
+    <link href="/layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="/layui/layui.js" type="text/javascript"></script>
+    <script src="/js/jquery-1.11.1.min.js"></script>
+    <script src="/js/jquery.easy-pie-chart.js"></script>
+    <script type="text/javascript">
+        var testId = [[${testId}]];
+        var studentId = [[${studentId}]];
+        $(function () {
+            layui.use('util', function () {
+                var util = layui.util;
+                $.ajax({
+                    url: '/question/test/getCountDown/' + testId + '/' + studentId, //请求url
+                    data: '', //请求参数，类似于username=xxx&password=xxx
+                    type: 'get', //请求方式
+                    dataType: 'json', //返回值的类型
+                    success: function (result) {  //服务器成功返回时执行的函数
+                        console.log(JSON.stringify(result));
+                        if (result.code == 2000) {
+                            //示例
+                            var endTime = new Date(result.time).getTime(); //结束日期
+                            var tipsTime1 = endTime - 1800000;
+                            var tipsTime2 = endTime - 300000;
+                            console.log(endTime);
+                            console.log(tipsTime1);
+                            console.log(tipsTime2);
+                            var serverTime = new Date().getTime(); //假设为当前服务器时间，这里采用的是本地时间，实际使用一般是取服务端的
+                            util.countdown(endTime, serverTime, function (date, serverTime, timer) {
+                                var str = date[0] + '天' + date[1] + '时' + date[2] + '分' + date[3] + '秒';
+                                layui.$('#test_time').html('距离考试结束还有：' + str);
+                                layui.$('#count_down').html(str);
+                                if (date[0] === 0 && date[1] === 0 && date[2] === 0 && date[3] === 0) {
+                                    alert("考试结束，系统将自动提交试卷！");
+                                    testSubmit();
+                                    window.close();
+                                }
+                            });
+                            util.countdown(tipsTime1, serverTime, function (date, serverTime, timer) {
+                                if (date[0] === 0 && date[1] === 0 && date[2] === 0 && date[3] === 0) {
+                                    alert("距离考试结束还有30分钟，请注意时间");
+                                    clearTimeout(timer);
+                                }
+
+                            });
+                            util.countdown(tipsTime2, serverTime, function (date, serverTime, timer) {
+                                if (date[0] === 0 && date[1] === 0 && date[2] === 0 && date[3] === 0) {
+                                    alert("距离考试结束还有5分钟，请停止答题，开始保存答案");
+                                    clearTimeout(timer);
+                                }
+                            });
+                        } else {
+                            alert("试卷加载失败");
+                            window.close();
+                        }
+                    },
+                    error: function () {
+                        alert("试卷初始化失败");
+                        window.close();
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        .hasBeenAnswer {
+            background: #5d9cec;
+            color: #fff;
+        }
+
+        .reading h2 {
+            width: 100%;
+            margin: 20px 0 70px;
+            text-align: center;
+            line-height: 2;
+            font-size: 20px;
+            color: #59595b;
+        }
+
+        .reading h2 a {
+            text-decoration: none;
+            color: #59595b;
+            font-size: 20px;
+        }
+
+        .reading h2 a:hover {
+            color: #2183f1;
+        }
+    </style>
+</head>
+
+<body>
+<div class="main">
+    <!--nr start-->
+    <div class="test_main">
+        <div class="nr_left">
+            <div class="test">
+                <form action="" method="post" enctype="multipart/form-data">
+                    <div class="test_title">
+                        <p class="test_time" id="test_time">
+                            //倒计时
+                        </p>
+
+                        <font><input name="test_submit" onclick="testSubmit()" type="button" value="交卷"></font>
+                        <font>&nbsp;&nbsp;&nbsp;</font>
+                        <font><input name="test_save" onclick="testSave()" type="button" value="保存"></font>
+                    </div>
+
+                    <div class="test_content" th:if="${list.singleCount!=0}">
+                        <div class="test_content_title">
+                            <h2>单选题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.singleCount!=0}">
+                        <ul>
+
+                            <li th:each="single,stat:${list.single}" th:id="'qu_0_'+${single.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${single.contentJson.content}，请问:${single.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${single.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${single.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${single.contentJson.image}"/>
+                                </div>
+                                <div class="test_content_nr_main">
+                                    <ul>
+
+                                        <li class="option">
+
+                                            <input class="radioOrCheck" th:id="|answer_${single.problem_id}_option_1|"
+                                                   th:name="|answer_${single.problem_id}|"
+                                                   title="single" type="radio"
+                                                   value="A" th:checked="${single.problem_answer eq 'A'}">
+
+
+                                            <label th:for="|answer_${single.problem_id}_option_1|">
+                                                A.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${single.contentJson.option_a}"></p>
+                                            </label>
+                                        </li>
+
+                                        <li class="option">
+
+                                            <input class="radioOrCheck" th:id="|answer_${single.problem_id}_option_2|"
+                                                   th:name="|answer_${single.problem_id}|"
+                                                   title="single" type="radio"
+                                                   value="B" th:checked="${single.problem_answer eq 'B'}">
+
+
+                                            <label th:for="|answer_${single.problem_id}_option_2|">
+                                                B.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${single.contentJson.option_b}"></p>
+                                            </label>
+                                        </li>
+                                        <li class="option">
+
+                                            <input class="radioOrCheck" th:id="|answer_${single.problem_id}_option_3|"
+                                                   th:name="|answer_${single.problem_id}|"
+                                                   title="single" type="radio"
+                                                   value="C" th:checked="${single.problem_answer eq 'C'}">
+
+
+                                            <label th:for="|answer_${single.problem_id}_option_3|">
+                                                C.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${single.contentJson.option_c}"></p>
+                                            </label>
+                                        </li>
+                                        <li class="option">
+
+                                            <input class="radioOrCheck" th:id="|answer_${single.problem_id}_option_4|"
+                                                   th:name="|answer_${single.problem_id}|"
+                                                   title="single" type="radio"
+                                                   value="D" th:checked="${single.problem_answer eq 'D'}">
+
+
+                                            <label th:for="|answer_${single.problem_id}_option_4|">
+                                                D.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${single.contentJson.option_d}"></p>
+                                            </label>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+
+                    <div class="test_content" th:if="${list.multipleCount!=0}">
+                        <div class="test_content_title">
+                            <h2>多选题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.multipleCount!=0}">
+                        <ul>
+
+                            <li th:each="multiple,stat:${list.multiple}" th:id="'qu_0_'+${multiple.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${multiple.contentJson.content}，请问:${multiple.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${multiple.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${multiple.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${multiple.contentJson.image}"/>
+                                </div>
+
+                                <div class="test_content_nr_main">
+                                    <ul>
+
+                                        <li class="option">
+
+
+                                            <input class="radioOrCheck" th:id="|answer_${multiple.problem_id}_option_1|"
+                                                   th:name="|answer_${multiple.problem_id}|"
+                                                   title="multiple" type="checkbox"
+                                                   value="A" th:checked="${#strings.contains(multiple.problem_answer,'A')}">
+
+                                            <label th:for="|answer_${multiple.problem_id}_option_1|">
+                                                A.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${multiple.contentJson.option_a}"></p>
+                                            </label>
+                                        </li>
+                                        <li class="option">
+
+
+                                            <input class="radioOrCheck" th:id="|answer_${multiple.problem_id}_option_2|"
+                                                   th:name="|answer_${multiple.problem_id}|"
+                                                   title="multiple" type="checkbox"
+                                                   value="B" th:checked="${#strings.contains(multiple.problem_answer,'B')}">
+
+                                            <label th:for="|answer_${multiple.problem_id}_option_2|">
+                                                B.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${multiple.contentJson.option_b}"></p>
+                                            </label>
+                                        </li>
+                                        <li class="option">
+
+
+                                            <input class="radioOrCheck" th:id="|answer_${multiple.problem_id}_option_3|"
+                                                   th:name="|answer_${multiple.problem_id}|"
+                                                   title="multiple" type="checkbox"
+                                                   value="C" th:checked="${#strings.contains(multiple.problem_answer,'C')}">
+
+                                            <label th:for="|answer_${multiple.problem_id}_option_3|">
+                                                C.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${multiple.contentJson.option_c}"></p>
+                                            </label>
+                                        </li>
+                                        <li class="option">
+
+
+                                            <input class="radioOrCheck" th:id="|answer_${multiple.problem_id}_option_4|"
+                                                   th:name="|answer_${multiple.problem_id}|"
+                                                   title="multiple" type="checkbox"
+                                                   value="D" th:checked="${#strings.contains(multiple.problem_answer,'D')}">
+
+                                            <label th:for="|answer_${multiple.problem_id}_option_4|">
+                                                D.
+                                                <p class="ue" style="display: inline;"
+                                                   th:text="${multiple.contentJson.option_d}"></p>
+                                            </label>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="test_content" th:if="${list.judgeCount!=0}">
+                        <div class="test_content_title">
+                            <h2>判断题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.judgeCount!=0}">
+                        <ul>
+
+                            <li th:each="judge,stat:${list.judge}" th:id="'qu_0_'+${judge.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${judge.contentJson.content}，请问:${judge.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${judge.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${judge.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${judge.contentJson.image}"/>
+                                </div>
+                                <div class="test_content_nr_main">
+                                    <ul>
+
+                                        <li class="option">
+
+                                            <input class="radioOrCheck" th:id="|answer_${judge.problem_id}_option_1|"
+                                                   th:name="|answer_${judge.problem_id}|"
+                                                   title="judge" type="radio"
+                                                   value="对" th:checked="${judge.problem_answer eq '对'}">
+
+
+                                            <label th:for="|answer_${judge.problem_id}_option_1|">
+                                                对.
+                                            </label>
+                                        </li>
+
+                                        <li class="option">
+
+                                            <input class="radioOrCheck" th:id="|answer_${judge.problem_id}_option_2|"
+                                                   th:name="|answer_${judge.problem_id}|"
+                                                   title="judge" type="radio"
+                                                   value="错" th:checked="${judge.problem_answer eq '错'}">
+
+
+                                            <label th:for="|answer_${judge.problem_id}_option_2|">
+                                                错.
+                                            </label>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="test_content" th:if="${list.fillCount!=0}">
+                        <div class="test_content_title">
+                            <h2>填空题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.fillCount!=0}">
+                        <ul>
+
+                            <li th:each="fill,stat:${list.fill}" th:id="'qu_0_'+${fill.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${fill.contentJson.content}，请问:${fill.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${fill.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${fill.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${fill.contentJson.image}"/>
+                                </div>
+                                <div class="test_content_nr_main">
+                                    <ul>
+                                        <li class="option" style="height: 200px;">
+                                            <input class="layui-input-inline" name="answer1" placeholder="请输入答案，以空格隔开"
+                                                   style="margin-top:80px;height:30px;width: 500px;"
+                                                   th:id="|answer_${fill.problem_id}_option_1|"
+                                                   th:onclick="|submitFill(${fill.problem_id})|"
+                                                   title="fill" type="text" th:value="${fill.problem_answer}" />
+
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="test_content" th:if="${list.subjectiveOneCount!=0}">
+                        <div class="test_content_title">
+                            <h2>简答题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.subjectiveOneCount!=0}">
+                        <ul>
+
+                            <li th:each="subjective,stat:${list.subjectiveOne}"
+                                th:id="'qu_0_'+${subjective.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${subjective.contentJson.content}，请问:${subjective.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${subjective.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${subjective.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${subjective.contentJson.image}"/>
+                                </div>
+                                <div class="test_content_nr_main">
+                                    <ul>
+                                        <li class="option" style="height: 200px;">
+                                            <input class="layui-input" style="margin-top:80px;height:30px;width: 300px"
+                                                   th:id="|answer_${subjective.problem_id}_option_1|"
+                                                   type="file">
+                                            <input class="layui-btn" type="button" value="上传"
+                                                   style="margin-top:80px; width: 60px;height: 40px;"
+                                                   th:onclick="|submitSubjective(${subjective.problem_id})|"/>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="test_content" th:if="${list.subjectiveTwoCount!=0}">
+                        <div class="test_content_title">
+                            <h2>计算题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.subjectiveTwoCount!=0}">
+                        <ul>
+
+                            <li th:each="subjective,stat:${list.subjectiveTwo}"
+                                th:id="'qu_0_'+${subjective.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${subjective.contentJson.content}，请问:${subjective.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${subjective.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${subjective.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${subjective.contentJson.image}"/>
+                                </div>
+                                <div class="test_content_nr_main">
+                                    <ul>
+                                        <li class="option" style="height: 200px;">
+                                            <input class="layui-input" style="margin-top:80px;height:30px;width: 300px"
+                                                   th:id="|answer_${subjective.problem_id}_option_1|"
+                                                   type="file">
+                                            <input class="layui-btn" type="button" value="上传"
+                                                   style="margin-top:80px; width: 60px;height: 40px;"
+                                                   th:onclick="|submitSubjective(${subjective.problem_id})|"/>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="test_content" th:if="${list.subjectiveThreeCount!=0}">
+                        <div class="test_content_title">
+                            <h2>应用题</h2>
+                        </div>
+                    </div>
+                    <div class="test_content_nr" th:if="${list.subjectiveThreeCount!=0}">
+                        <ul>
+
+                            <li th:each="subjective,stat:${list.subjectiveThree}"
+                                th:id="'qu_0_'+${subjective.problem_id}">
+                                <div class="test_content_nr_tt">
+                                    <i th:text="${stat.count}"></i><font
+                                        th:text="|${subjective.contentJson.content}，请问:${subjective.contentJson.question}|"></font>
+                                </div>
+                                <div th:style="'display:' + @{(${subjective.contentJson.isImage eq 'true'} ? 'inline-block':'none' )} + ''">
+                                    <img th:if="${subjective.contentJson.isImage eq 'true'}"
+                                         th:src="'/'+${subjective.contentJson.image}"/>
+                                </div>
+                                <div class="test_content_nr_main">
+                                    <ul>
+                                        <li class="option" style="height: 200px;">
+                                            <input class="layui-input" style="margin-top:80px;height:30px;width: 300px"
+                                                   th:id="|answer_${subjective.problem_id}_option_1|"
+                                                   type="file">
+                                            <input class="layui-btn" type="button" value="上传"
+                                                   style="margin-top:80px; width: 60px;height: 40px;"
+                                                   th:onclick="|submitSubjective(${subjective.problem_id})|"/>
+                                        </li>
+
+                                    </ul>
+                                </div>
+                            </li>
+
+                        </ul>
+                    </div>
+                    <div class="test_content">
+                        <div class="test_content_title">
+                            <h2>请检查后提交试卷</h2>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+
+        </div>
+        <div class="nr_right">
+            <div class="nr_rt_main">
+                <div class="rt_nr1"  style="overflow:auto; overflow-x: hidden;">
+                    <video id="video" width="280" height="163" controls>
+                    </video>
+                    <canvas id="canvas" width="480" height="420" style="display: none;"></canvas>
+                    <div class="rt_nr1_title">
+                        <h1>
+                            答题卡
+                        </h1>
+                        <p class="test_time" id="count_down">
+                            倒计时
+                        </p>
+                    </div>
+
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.singleCount!=0}">
+                            <h2>单选题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit" th:text="${list.singleCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.single}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="single" th:class="${list.problem_answer ne ''?'hasBeenAnswer':''}"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.multipleCount!=0}">
+                            <h2>多选题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit" th:text="${list.multipleCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.multiple}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="multiple" th:class="${list.problem_answer ne ''?'hasBeenAnswer':''}"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.judgeCount!=0}">
+                            <h2>判断题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit" th:text="${list.judgeCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.judge}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="judge" th:class="${list.problem_answer ne ''?'hasBeenAnswer':''}"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.fillCount!=0}">
+                            <h2>填空题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit" th:text="${list.fillCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.fill}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="fill" th:class="${list.problem_answer ne ''?'hasBeenAnswer':''}"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.subjectiveOneCount!=0}">
+                            <h2>简答题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit"
+                                                 th:text="${list.subjectiveOneCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.subjectiveOne}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="subjective"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.subjectiveTwoCount!=0}">
+                            <h2>计算题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit"
+                                                 th:text="${list.subjectiveTwoCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.subjectiveTwo}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="subjective"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="rt_content">
+                        <div class="rt_content_tt" th:if="${list.subjectiveThreeCount!=0}">
+                            <h2>应用题</h2>
+                            <p>
+                                <span>共</span><i class="content_lit"
+                                                 th:text="${list.subjectiveThreeCount}"></i><span>题</span>
+                            </p>
+                        </div>
+                        <div class="rt_content_nr answerSheet">
+                            <ul>
+
+                                <li th:each="list,stat:${list.subjectiveThree}">
+                                    <a th:href="|#qu_0_${list.problem_id}|"
+                                       th:text="${stat.count}" type="subjective"></a></li>
+
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!--nr end-->
+
+
+    <div class="foot"></div>
+
+
+</div>
+
+
+<script th:inline="javascript">
+    $(function () {
+        $('li.option label').click(function () {
+            var examId = $(this).closest('.test_content_nr_main').closest('li').attr('id'); // 得到题目ID
+            var cardLi = $('a[href=#' + examId + ']'); // 根据题目ID找到对应答题卡
+            // 设置已答题
+            if (!cardLi.hasClass('hasBeenAnswer')) {
+                cardLi.addClass('hasBeenAnswer');
+            }
+        });
+    });
+
+    function submitFill(problemId) {
+        var cardLi = $('a[href=#qu_0_' + problemId + ']'); // 根据题目ID找到对应答题卡
+        // 设置已答题
+        if (!cardLi.hasClass('hasBeenAnswer')) {
+            cardLi.addClass('hasBeenAnswer');
+        }
+    }
+
+    function submitSubjective(problemId) {
+        var cardLi = $('a[href=#qu_0_' + problemId + ']'); // 根据题目ID找到对应答题卡
+        //判断图片路径是否正确
+        var fileName = document.getElementById("answer_" + problemId + "_option_1").value;
+        if (fileName == null || fileName === "") {
+            alert("文件不得为空！");
+        } else {
+            var formData = new FormData;
+            formData.append("file", document.getElementById("answer_" + problemId + "_option_1").files[0]);
+            $.ajax({
+                url: "/file/uploadAnswer/" + testId + "/" + studentId + "/" + problemId,
+                type: 'POST',
+                cache: false,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (result) {
+                    console.log(result);
+                    if (result.code === 2000) {
+                        // 设置已答题
+                        if (!cardLi.hasClass('hasBeenAnswer')) {
+                            cardLi.addClass('hasBeenAnswer');
+                        }
+                        alert("上传成功！");
+                    } else {
+                        alert("上传失败，请稍后重试！");
+                    }
+                },
+                error: function () {
+                    alert("网络错误，请稍后重试！");
+                }
+            });
+        }
+    }
+
+    function testSave() {
+        var cardLis = document.evaluate("/html/body/div/div[1]/div[2]/div/div/div/div[2]/ul/li/a", document, null, XPathResult.ANY_TYPE, null);
+        var nodes = cardLis.iterateNext(); //枚举第一个元素
+        var questionList = new Array();
+        while (nodes) {
+            if (nodes.getAttribute("class") === "hasBeenAnswer") {
+                var problemId = nodes.getAttribute("href").replace("#qu_0_", "");
+                console.log(problemId);
+                var type = nodes.getAttribute("type");
+                console.log(type);
+                //题目处理
+                var question = returnQuestion(problemId, type);
+                console.log(question);
+
+                questionList.push(question);
+                console.log(questionList);
+            }
+            nodes = cardLis.iterateNext(); //枚举下一个元素
+        }
+        $.ajax({
+            url: '/question/test/submitAnswer/' + testId + '/' + studentId, //请求url
+            data: JSON.stringify({"list": questionList}), //请求参数，类似于username=xxx&password=xxx
+            type: 'post', //请求方式
+            dataType: 'json', //返回值的类型
+            contentType: 'application/json;charset=utf-8',
+            success: function (result) {  //服务器成功返回时执行的函数
+                console.log(result);
+                if (result.code === 2000) {
+                    alert("客观题答案保存成功！主观题请点击上传以完成保存操作。");
+                } else {
+                    alert("自动保存失败，请稍后重试");
+                }
+            },
+            error: function () {
+                alert("网络错误，请稍后重试！");
+            }
+        });
+    }
+
+    function returnQuestion(problemId, type) {
+        var question = {};
+        question["questionId"] = problemId;
+
+        if (type === "single") {
+            var optionA = document.getElementById("answer_" + problemId + "_option_1");
+            var optionB = document.getElementById("answer_" + problemId + "_option_2");
+            var optionC = document.getElementById("answer_" + problemId + "_option_3");
+            var optionD = document.getElementById("answer_" + problemId + "_option_4");
+            if (optionA.checked) {
+                question["answer"] = "A";
+                return question;
+            }
+            if (optionB.checked) {
+                question["answer"] = "B";
+                return question;
+            }
+            if (optionC.checked) {
+                question["answer"] = "C";
+                return question;
+            }
+            if (optionD.checked) {
+                question["answer"] = "D";
+                return question;
+            }
+        }
+        if (type === "multiple") {
+            var optionA = document.getElementById("answer_" + problemId + "_option_1");
+            var optionB = document.getElementById("answer_" + problemId + "_option_2");
+            var optionC = document.getElementById("answer_" + problemId + "_option_3");
+            var optionD = document.getElementById("answer_" + problemId + "_option_4");
+            var answer = "";
+            if (optionA.checked) {
+                answer = "A";
+            }
+            if (optionB.checked) {
+                if (answer.length != 0) {
+                    answer = answer + "|" + "B";
+                } else {
+                    answer = "B";
+                }
+            }
+            if (optionC.checked) {
+                if (answer.length != 0) {
+                    answer = answer + "|" + "C";
+                } else {
+                    answer = "C";
+                }
+            }
+            if (optionD.checked) {
+                if (answer.length != 0) {
+                    answer = answer + "|" + "D";
+                } else {
+                    answer = "D";
+                }
+            }
+            question["answer"] = answer;
+            return question;
+        }
+        if (type === "judge") {
+            var optionA = document.getElementById("answer_" + problemId + "_option_1");
+            var optionB = document.getElementById("answer_" + problemId + "_option_2");
+            if (optionA.checked) {
+                question["answer"] = "对";
+                return question;
+            }
+            if (optionB.checked) {
+                question["answer"] = "错";
+                return question;
+            }
+        }
+        if (type === "fill") {
+            var answer = document.getElementById("answer_" + problemId + "_option_1").value;
+            question["answer"] = answer;
+            return question;
+        }
+    }
+
+    var subjectiveOne = [[${list.subjectiveOne}]];
+    var subjectiveTwo = [[${list.subjectiveTwo}]];
+    var subjectiveThree = [[${list.subjectiveThree}]];
+    console.log(subjectiveOne);
+
+    function testSubmit() {
+        testSave();
+        for (var question in subjectiveOne) {
+            var id = subjectiveOne[question].problem_id;
+            var fileName = document.getElementById("answer_" + id + "_option_1").value;
+            if (fileName.length != 0) {
+                submitSubjective(id);
+            }
+        }
+        for (var question in subjectiveTwo) {
+            var id = subjectiveTwo[question].problem_id;
+            var fileName = document.getElementById("answer_" + id + "_option_1").value;
+            if (fileName.length != 0) {
+                submitSubjective(id);
+            }
+        }
+        for (var question in subjectiveThree) {
+            var id = subjectiveThree[question].problem_id;
+            var fileName = document.getElementById("answer_" + id + "_option_1").value;
+            if (fileName.length != 0) {
+                submitSubjective(id);
+            }
+        }
+
+    }
+</script>
+<script>
+    //访问用户媒体设备的兼容方法
+    function getUserMedia(constraints, success, error) {
+        if (navigator.mediaDevices.getUserMedia) {
+            //最新的标准API
+            navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);
+        } else if (navigator.webkitGetUserMedia) {
+            //webkit核心浏览器
+            navigator.webkitGetUserMedia(constraints, success, error)
+        } else if (navigator.mozGetUserMedia) {
+            //firfox浏览器
+            navigator.mozGetUserMedia(constraints, success, error);
+        } else if (navigator.getUserMedia) {
+            //旧版API
+            navigator.getUserMedia(constraints, success, error);
+        }
+    }
+
+    let video = document.getElementById('video');
+    let canvas = document.getElementById('canvas');
+    let context = canvas.getContext('2d');
+
+    function success(stream) {
+        //兼容webkit核心浏览器
+        let CompatibleURL = window.URL || window.webkitURL;
+        //将视频流设置为video元素的源
+        console.log(stream);
+
+        //video.src = CompatibleURL.createObjectURL(stream);
+        video.srcObject = stream;
+        video.play();
+    }
+
+    function error(error) {
+        console.log(`访问用户媒体设备失败${error.name}, ${error.message}`);
+    }
+
+    if (navigator.mediaDevices.getUserMedia || navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia) {
+        //调用用户媒体设备, 访问摄像头
+        getUserMedia({video: {width: 480, height: 320}}, success, error);
+    } else {
+        alert('不支持访问用户媒体');
+    }
+
+    var int =self.setInterval("clock()",1000*30*60);
+    function clock(){
+        context.drawImage(video, 0, 0, 480, 320);
+        var imgURI = canvas.toDataURL("image/png");
+        var formData = new FormData;
+        formData.append("file", dataURItoBlob(imgURI),'image.png');
+        $.ajax({
+            url: "/file/uploadImage/" + testId + "/" + studentId ,
+            type: 'POST',
+            cache: false,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (result) {
+            },
+            error: function () {
+                alert("网络出现故障！请检查！");
+            }
+        });
+    }
+    function dataURItoBlob(base64Data) {
+        var byteString;
+        if (base64Data.split(',')[0].indexOf('base64') >= 0)
+            byteString = atob(base64Data.split(',')[1]);
+        else
+            byteString = unescape(base64Data.split(',')[1]);
+        var mimeString = base64Data.split(',')[0].split(':')[1].split(';')[0];
+        var ia = new Uint8Array(byteString.length);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+        return new Blob([ia], {type:mimeString});
+    }
+</script>
+
+</body>
+</html>

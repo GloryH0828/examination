@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="/layui/layui.js" type="text/javascript"></script>
+    <script src="/js/jquery-3.3.1.min.js" type="text/javascript"></script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-container" style="margin-top: 50px;width: 1000px;">
+    <form action="" class="layui-form" method="POST">
+        <div class="layui-form-item" style="margin-left: 100px;">
+            <label class="layui-form-label">题目类型</label>
+            <div class="layui-inline">
+                <select lay-search name="type">
+                    <option value="">所有</option>
+                    <option value="1">单选题</option>
+                    <option value="2">多选题</option>
+                    <option value="3">填空题</option>
+                    <option value="4">判断题</option>
+                    <option value="5">简答题</option>
+                    <option value="6">计算题</option>
+                    <option value="7">应用题</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item" style="margin-left: 100px;">
+            <label class="layui-form-label">条件</label>
+            <div class="layui-inline" style="width: 210px;">
+                <input class="layui-input" name="index" placeholder="请输入知识点" type="text">
+            </div>
+            <div class="layui-inline" style="width: 200px;">
+                <button class="layui-btn" lay-filter="find" lay-submit>搜索</button>
+            </div>
+        </div>
+
+    </form>
+    <table class="layui-hide" id="test" lay-filter="test" style="width: 850px"></table>
+    <script id="barDemo" type="text/html">
+        <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+    </script>
+    <script charset="utf-8" src="layui/layui.js"></script>
+    <script>
+        layui.use(['form', 'table'], function () {
+            var form = layui.form;
+            var table = layui.table;
+            form.on('submit(find)', function (data) {
+                //获取知识点
+                var index = data.field.index;
+                var type = data.field.type;
+                if (index.length == 0) {
+                    index = "null";
+                }
+                if (type.length == 0) {
+                    type = 0;
+                }
+                table.reload('test', {
+                    url: '/question/findByIndex/'+sessionStorage.getItem("course")
+                    , where: {
+                        index: index,
+                        type: type
+                    } //设定异步数据接口的额外参数
+                    //,height: 300
+                    , page: {
+                        curr: 1 //重新从第 1 页开始
+                    }
+                });
+                return false;
+            });
+        });
+        layui.use('table', function () {
+            var table = layui.table;
+
+            table.render({
+                elem: '#test'
+                , url: '/question/findAll/'+sessionStorage.getItem("course")
+                , title: '题目列表'
+                , cols: [
+                    [
+                        {field: 'problem_id', width: 100, title: '编号', sort: true}
+                        , {
+                        field: 'problem_type', width: 100, title: '题目类型', templet: function (data) {
+                            switch (data.problem_type) {
+                                case 1:
+                                    return "单选题";
+                                case 2:
+                                    return "多选题";
+                                case 3:
+                                    return "填空题";
+                                case 4:
+                                    return "判断题";
+                                case 5:
+                                    return "简答题";
+                                case 6:
+                                    return "计算题";
+                                case 7:
+                                    return "应用题";
+
+                            }
+                        }
+                    }
+                        , {
+                        field: 'problem_content', width: 400, title: '题目主干', templet: function (data) {
+                            return JSON.parse(data.problem_content).content;
+                        }
+                    }
+                        , {
+                        field: 'problem_content', width: 220, title: '题目问题', templet: function (data) {
+                            return JSON.parse(data.problem_content).question;
+                        }
+                    }
+                        , {field: 'problem_knowledge_point', width: 200, title: '对应知识点'}
+                        , {fixed: 'right', title: '操作', toolbar: '#barDemo', width: 120}
+                    ]
+                ]
+                , page: true
+            });
+
+            //监听行工具事件
+            table.on('tool(test)', function (obj) {
+                var data = obj.data;
+                if (obj.event === 'del') {
+                    layer.confirm('确定要删除吗？', function (index) {
+
+                        $.ajax({
+                            url: '/question/deleteById/' + data.problem_id, //请求url
+                            data: '', //请求参数，类似于username=xxx&password=xxx
+                            type: 'delete', //请求方式
+                            dataType: 'json', //返回值的类型
+                            contentType: 'application/json;charset=utf-8',
+                            success: function (result) {  //服务器成功返回时执行的函数
+                                console.log(JSON.stringify(result));
+                                if (result.code == 2000) {
+                                    alert("删除成功！");
+                                    window.location.href = "question_search.html";
+                                } else {
+                                    alert("删除失败!");
+                                }
+                            }
+                        });
+                        layer.close(index);
+                    });
+                } else if (obj.event === 'edit') {
+                    window.location.href = "/question/findById/" + data.problem_id;
+                }
+            });
+        });
+    </script>
+
+</div>
+<script>
+    //二级菜单联动
+    layui.use('element', function () {
+        var element = layui.element;
+
+    });
+</script>
+</body>
+</html>

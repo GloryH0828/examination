@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gloryh.mapper.QuestionMapper">
+    <insert id="add">
+        INSERT INTO problem_database(problem_content, problem_answer, problem_type, course_id, problem_chapter,
+                                     problem_knowledge_point)
+        VALUES (#{problem_content},
+                #{problem_answer},
+                #{problem_type},
+                #{course.course_id},
+                #{problem_chapter},
+                #{problem_knowledge_point})
+    </insert>
+    <update id="edit" parameterType="com.gloryh.entity.Question">
+        UPDATE problem_database
+        SET problem_content= #{problem_content},
+            problem_answer= #{problem_answer},
+            problem_chapter= #{problem_chapter},
+            problem_knowledge_point=#{problem_knowledge_point}
+        WHERE problem_id = #{problem_id}
+    </update>
+    <delete id="deleteById">
+        DELETE
+        FROM problem_database
+        WHERE problem_id = #{problem_id}
+    </delete>
+    <select id="findAll" resultType="com.gloryh.entity.Question">
+        SELECT *
+        FROM problem_database
+        WHERE course_id = #{courseId} LIMIT #{index}
+            , #{limit}
+    </select>
+    <select id="count" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM problem_database
+        WHERE course_id = #{courseId}
+    </select>
+    <select id="findByIndex" resultType="com.gloryh.entity.Question">
+        SELECT * FROM problem_database
+        WHERE course_id = #{courseId}
+        <if test="type !=0">
+            AND problem_type = #{type}
+        </if>
+        <if test="keyword != null and keyword != 'null'">
+            AND problem_knowledge_point LIKE CONCAT(CONCAT('%',#{keyword},'%'))
+        </if>
+        LIMIT #{index},#{limit}
+    </select>
+    <select id="countByIndex" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM problem_database
+        WHERE course_id = #{courseId}
+        <if test="type !=0">
+            AND problem_type = #{type}
+        </if>
+        <if test="keyword != null and keyword != 'null'">
+            AND problem_knowledge_point LIKE CONCAT(CONCAT('%',#{keyword},'%'))
+        </if>
+    </select>
+    <select id="findById" resultType="com.gloryh.entity.Question">
+        SELECT *
+        FROM problem_database
+        WHERE problem_id = #{problem_id}
+    </select>
+    <select id="countByType" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM problem_database
+        WHERE course_id = #{id}
+          AND problem_type = #{type}
+    </select>
+    <select id="findChapter" resultType="java.lang.String">
+        SELECT problem_chapter
+        FROM problem_database
+        WHERE course_id = #{id}
+        GROUP BY problem_chapter
+    </select>
+    <select id="countByChapter" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM problem_database
+        WHERE course_id = #{courseId}
+          AND problem_type = #{type}
+          AND problem_chapter = #{ch}
+    </select>
+    <select id="findKnowledge" resultType="java.lang.String">
+        SELECT problem_knowledge_point
+        FROM problem_database
+        WHERE course_id = #{id}
+        GROUP BY problem_knowledge_point
+    </select>
+    <select id="countByKnowledge" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM problem_database
+        WHERE course_id = #{courseId}
+          AND problem_type = #{type}
+          AND problem_knowledge_point = #{kn}
+    </select>
+    <select id="findByType" resultType="com.gloryh.entity.Question">
+        SELECT *
+        FROM problem_database
+        WHERE course_id = #{course_id}
+          AND problem_type = #{type}
+    </select>
+    <select id="getPoint" resultType="java.lang.String">
+        SELECT problem_content FROM problem_database WHERE problem_id =#{problemId}
+    </select>
+</mapper>

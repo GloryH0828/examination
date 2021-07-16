@@ -1,0 +1,418 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.gloryh.mapper.TestMapper">
+    <resultMap id="countData" type="com.gloryh.entity.CountData">
+        <result property="maxScore" column="max"/>
+        <result property="minScore" column="min"/>
+        <result property="sum" column="sum"/>
+        <result property="problemScore" column="exam_score"/>
+    </resultMap>
+    <resultMap id="studentList" type="com.gloryh.entity.Student">
+        <id property="student_id" column="student_id"/>
+        <result property="student_name" column="student_name"/>
+        <result property="classes.class_name" column="class_name"/>
+    </resultMap>
+    <resultMap id="teacherList" type="com.gloryh.entity.Teacher">
+        <id property="teacher_id" column="teacher_id"/>
+        <result property="teacher_name" column="teacher_name"/>
+    </resultMap>
+    <resultMap id="testStudent" type="com.gloryh.entity.TestStudent">
+        <id property="id" column="id"/>
+        <result property="student.student_id" column="student_id"/>
+        <result property="student.student_name" column="student_name"/>
+        <result property="student.classes.class_id" column="class_id"/>
+        <result property="student.classes.class_name" column="class_name"/>
+        <result property="is_add_time" column="is_add_time"/>
+        <result property="is_cancel" column="is_cancel"/>
+        <result property="student_status" column="student_status"/>
+        <result property="login_ip" column="login_ip"/>
+        <result property="student_end_time" column="student_end_time"/>
+        <result property="student_images" column="student_images"/>
+        <result property="test.test_id" column="test_id"/>
+        <result property="test.test_name" column="test_name"/>
+        <result property="test.test_begin_time" column="test_begin_time"/>
+        <result property="test.test_end_time" column="test_end_time"/>
+    </resultMap>
+    <resultMap id="testTeacher" type="com.gloryh.entity.TestTeacher">
+        <id property="id" column="id"/>
+        <result property="test.test_id" column="test_id"/>
+        <result property="teacher.teacher_id" column="teacher_id"/>
+        <result property="teacher.teacher_name" column="teacher_name"/>
+    </resultMap>
+    <insert id="addTest" useGeneratedKeys="true" keyProperty="test_id">
+        INSERT INTO test(test_creater, test_begin_time, test_end_time, test_name, course_id)
+        VALUES (#{test_creater},
+                #{test_begin_time},
+                #{test_end_time},
+                #{test_name},
+                #{course.course_id})
+    </insert>
+    <insert id="addQuestionListToTest">
+        insert into test_problem(test_id,exam_score,problem_id)
+        VALUES
+        <foreach collection="questions" item="question" separator=",">
+            (#{test_id},#{question.score},#{question.problem_id})
+        </foreach>
+    </insert>
+    <insert id="addTeacherToTest">
+        INSERT INTO test_teacher(test_id, teacher_id)
+        VALUES
+        <foreach collection="teacherIds" item="id" separator=",">
+            (#{testId},#{id})
+        </foreach>
+    </insert>
+    <insert id="addStudentToTest">
+        INSERT INTO test_student(test_id,student_id)
+        VALUES
+        <foreach collection="studentIds" item="id" separator=",">
+            (#{testId},#{id})
+        </foreach>
+    </insert>
+    <insert id="addNewAnswer">
+        INSERT INTO answer_test_student(student_id,test_id,problem_id,test_answer)
+        VALUES
+        <foreach collection="newAnswer" item="testQuestion" separator=",">
+            (
+            #{testQuestion.student_id},
+            #{testQuestion.test_id},
+            #{testQuestion.problem_id},
+            #{testQuestion.test_answer}
+            )
+        </foreach>
+    </insert>
+    <insert id="addNewAnswerFile">
+        INSERT INTO answer_test_student(student_id, test_id, problem_id, test_answer_image, answer_is_image)
+        VALUES (#{testQuestion.student_id},
+                #{testQuestion.test_id},
+                #{testQuestion.problem_id},
+                #{testQuestion.test_answer_image},
+                #{testQuestion.answer_is_image})
+    </insert>
+    <insert id="addNewStuImage">
+        INSERT INTO test_student(student_images)
+            VALUE (#{url})
+        WHERE student_id=#{studentId}
+          AND test_id =#{testId}
+    </insert>
+    <update id="addScore">
+        UPDATE answer_test_student
+        SET test_score =#{score}
+        WHERE student_id = #{studentId}
+          AND test_id = #{testId}
+          AND problem_id = #{problem_id}
+    </update>
+    <update id="addTimeForStudent">
+        UPDATE test_student
+        SET is_add_time=1,
+            student_end_time=#{time}
+        WHERE test_id = #{testId}
+          AND student_id = #{studentId}
+    </update>
+    <update id="editEndTime">
+        UPDATE test
+        SET test_end_time=#{time}
+        WHERE test_id = #{testId}
+    </update>
+    <update id="editStudentStatus">
+        UPDATE test_student
+        SET student_status=#{status}
+        <if test="ip != null">
+            ,login_ip=#{ip}
+        </if>
+        WHERE test_id = #{testId}
+        AND student_id = #{studentId}
+    </update>
+    <update id="cancelStudentTest">
+        UPDATE test_student
+        SET is_cancel=1
+        WHERE test_id = #{testId}
+          AND student_id = #{studentId}
+    </update>
+    <update id="updateOldAnswer" parameterType="list">
+        <foreach collection="oldAnswer" item="testQuestion" separator=";">
+            UPDATE answer_test_student
+            SET test_answer = #{testQuestion.test_answer}
+            WHERE student_id = #{testQuestion.student_id}
+            AND test_id = #{testQuestion.test_id}
+            AND problem_id = #{testQuestion.problem_id}
+        </foreach>
+    </update>
+    <update id="updateOldAnswerFile">
+        UPDATE answer_test_student
+        SET test_answer_image = #{testQuestion.test_answer_image}
+        WHERE student_id = #{testQuestion.student_id}
+          AND test_id = #{testQuestion.test_id}
+          AND problem_id = #{testQuestion.problem_id}
+    </update>
+    <update id="updateOldStuImage">
+        UPDATE test_student
+        SET student_images=#{url}
+        WHERE student_id = #{studentId}
+          AND test_id = #{testId}
+    </update>
+    <update id="updateTestAnswerStatus">
+        UPDATE answer_test_student
+        SET test_teacher =#{teacherId},
+            test_status  =#{status}
+        WHERE student_id = #{studentId}
+          AND test_id = #{testId}
+    </update>
+    <select id="findCreatTestByTeacherId" resultType="com.gloryh.entity.Test">
+        SELECT test_id, test_end_time, test_begin_time, test_name
+        FROM test
+        WHERE test_creater = #{teacherId}
+    </select>
+    <select id="findMeCreatByIndex" resultType="com.gloryh.entity.Test">
+        SELECT test_id, test_end_time, test_begin_time, test_name
+        FROM test
+        WHERE test_creater = #{teacherId}
+          AND test_name LIKE CONCAT(CONCAT('%', #{index}, '%'))
+    </select>
+    <select id="findStuInTest" resultMap="testStudent">
+        SELECT *
+        FROM test_student,
+             student,
+             class
+        WHERE test_student.test_id = #{testId}
+          AND test_student.student_id = student.student_id
+          AND class.class_id = student.class_id
+    </select>
+    <select id="findAllStu" resultMap="studentList">
+        SELECT *
+        FROM student AS s,
+             class As c,
+             class_course_teacher AS cct,
+             course_teacher As ct
+        WHERE ct.course_id = #{courseId}
+          AND cct.c_t_id = ct.c_t_id
+          AND c.class_id = cct.c_id
+          AND s.class_id = c.class_id GROUP BY s.student_id
+    </select>
+    <select id="findTeaInTest" resultMap="testTeacher">
+        SELECT test_teacher.*, teacher.teacher_name
+        FROM test_teacher,
+             teacher
+        WHERE test_teacher.test_id = #{testId}
+          AND test_teacher.teacher_id = teacher.teacher_id
+    </select>
+    <select id="findAllTea" resultMap="teacherList">
+        SELECT teacher.teacher_id, teacher.teacher_name
+        FROM teacher,
+             course_teacher
+        WHERE course_teacher.course_id = #{courseId}
+          AND teacher.teacher_id = course_teacher.teacher_id
+    </select>
+    <select id="findTestReadyByIndex" resultType="com.gloryh.entity.Test">
+        SELECT test.test_id, test_end_time, test_begin_time, test_name
+        FROM test_student,test
+        WHERE test_student.student_id=#{studentId} AND test.test_id=test_student.test_id
+        <if test="index !=null ">
+            AND test.test_name LIKE CONCAT(CONCAT('%',#{index},'%'))
+        </if>
+    </select>
+    <select id="findStuInTestByStudentId" resultMap="testStudent">
+        SELECT test_student.*, test.test_begin_time, test.test_end_time
+        FROM test_student,
+             test
+        WHERE test_student.student_id = #{studentId}
+          AND test.test_id = #{testId}
+          AND test_student.test_id = test.test_id
+    </select>
+    <select id="findProblemInTest" resultType="com.gloryh.entity.Question">
+        SELECT problem_database.*, test_problem.exam_score
+        FROM problem_database,
+             test_problem
+        WHERE test_problem.test_id = #{testId}
+          AND test_problem.problem_id = problem_database.problem_id
+    </select>
+    <select id="findAnswer" resultType="com.gloryh.entity.TestQuestion">
+        SELECT *
+        FROM answer_test_student
+        WHERE test_id = #{testId}
+          AND student_id = #{studentId}
+    </select>
+    <select id="getOldAnswer" resultType="com.gloryh.entity.TestQuestion">
+        SELECT *
+        FROM answer_test_student
+        WHERE test_id = #{testId}
+          AND student_id = #{studentId}
+          AND problem_id = #{problemId}
+        LIMIT 1
+    </select>
+    <select id="getTestEndTime" resultType="date">
+        SELECT test_end_time
+        FROM test
+        WHERE test_id = #{testId}
+    </select>
+    <select id="getStudentEndTime" resultType="date">
+        SELECT student_end_time
+        FROM test_student
+        WHERE test_id = #{testId}
+          AND student_id = #{studentId}
+    </select>
+    <select id="getOldStuImage" resultType="java.lang.String">
+        SELECT student_images
+        FROM test_student
+        WHERE test_id = #{testId}
+          AND student_id = #{studentId}
+        LIMIT 1
+    </select>
+    <select id="getSavedAnswer" resultType="java.lang.String">
+        SELECT test_answer
+        FROM answer_test_student
+        WHERE student_id = #{studentId}
+          AND test_id = #{testId}
+          AND problem_id = #{problem_id}
+    </select>
+    <select id="findCorrectByTeacherId" resultType="com.gloryh.entity.Test">
+        SELECT test.test_id, test_end_time, test_begin_time, test_name
+        FROM test,
+             test_teacher
+        WHERE test_teacher.teacher_id = #{teacherId}
+          AND test.test_id = test_teacher.test_id
+    </select>
+    <select id="findMeCorrectByIndex" resultType="com.gloryh.entity.Test">
+        SELECT test.test_id, test_end_time, test_begin_time, test_name
+        FROM test,
+             test_teacher
+        WHERE test_teacher.teacher_id = #{teacherId}
+          AND test.test_id = test_teacher.test_id
+          AND test.test_name LIKE CONCAT(CONCAT('%', #{index}, '%'))
+    </select>
+    <select id="correctList" resultType="com.gloryh.entity.Student">
+        SELECT student.*
+        FROM student,
+             answer_test_student
+        WHERE answer_test_student.test_id = #{testId}
+          AND answer_test_student.student_id = student.student_id
+          AND answer_test_student.test_status = 0
+        GROUP BY student.student_id
+    </select>
+    <select id="getCorrecting" resultType="java.lang.Integer">
+        SELECT student_id
+        FROM answer_test_student
+        WHERE test_id = #{testId}
+          AND test_teacher = #{teacherId}
+          AND test_status = 1
+        LIMIT 1
+    </select>
+    <select id="findTestAnswerByStu" resultType="com.gloryh.entity.TestAnswerVO">
+        SELECT answer_test_student.*,
+               problem_database.problem_answer,
+               problem_database.problem_content AS point,
+               test_problem.exam_score
+        FROM answer_test_student,
+             problem_database,
+             test_problem
+        WHERE answer_test_student.test_id = #{testId}
+          AND answer_test_student.student_id = #{studentId}
+          AND test_problem.problem_id = answer_test_student.problem_id
+          AND test_problem.test_id = answer_test_student.test_id
+          AND problem_database.problem_id = answer_test_student.problem_id
+        ORDER BY problem_database.problem_type ASC
+
+    </select>
+    <select id="getAnswerFile" resultType="java.lang.String">
+        SELECT test_answer_image
+        FROM answer_test_student
+        WHERE student_id = #{studentId}
+          AND test_id = #{testId}
+          AND problem_id = #{problemId}
+    </select>
+    <select id="getEndTestByCreator" resultType="com.gloryh.entity.Test">
+        SELECT test_id, test_end_time, test_begin_time, test_name
+        FROM test
+        WHERE test_creater = #{teacherId}
+        AND UNIX_TIMESTAMP(test_end_time) &lt; #{date}
+        <if test="index != null and index != 'null'">
+            AND test_name LIKE CONCAT(CONCAT('%', #{index}, '%'))
+        </if>
+    </select>
+    <select id="getGradesList" resultType="com.gloryh.entity.Grades">
+        SELECT
+        student.student_id,student.student_name,student.student_username
+        ,class.class_name
+        ,answer_test_student.test_status,teacher.teacher_name,teacher.teacher_username,test_student.is_cancel
+        FROM
+        student,
+        answer_test_student,
+        teacher,
+        class,
+        test_student
+        WHERE
+        answer_test_student.test_id = #{testId}
+        <if test="type == 1 ">
+            AND student.student_name LIKE CONCAT(CONCAT('%', #{index}, '%'))
+        </if>
+        <if test="type == 2">
+            AND student.student_username LIKE CONCAT(CONCAT('%', #{index}, '%'))
+        </if>
+        AND student.student_id = answer_test_student.student_id
+        AND teacher.teacher_id = answer_test_student.test_teacher
+        AND class.class_id=student.class_id
+        AND test_student.student_id =answer_test_student.student_id
+        AND test_student.test_id = answer_test_student.test_id
+        GROUP BY test_student.student_id
+    </select>
+    <select id="getNotJoinStu" resultType="com.gloryh.entity.Grades">
+        SELECT
+            student.*,test_student.is_cancel,test_student.student_status,class.class_name
+        FROM
+             class,
+             student,
+            test_student
+                LEFT JOIN answer_test_student ON test_student.student_id = answer_test_student.student_id
+        WHERE
+            answer_test_student.id IS NULL
+        AND test_student.student_id = student.student_id
+        AND test_student.test_id =#{testId}
+          AND class.class_id =student.class_id
+        <if test="type == 1 ">
+            AND student_name LIKE CONCAT(CONCAT('%', #{index}, '%'))
+        </if>
+        <if test="type == 2">
+            AND student_username LIKE CONCAT(CONCAT('%', #{index}, '%'))
+        </if>
+    </select>
+    <select id="findNoAnswerProblem" resultType="com.gloryh.entity.Question">
+        SELECT
+            problem_database.*
+        FROM
+            problem_database,
+            test_problem
+                LEFT JOIN answer_test_student ON test_problem.problem_id = answer_test_student.problem_id AND answer_test_student.student_id =#{studentId}
+        WHERE
+            answer_test_student.id IS NULL
+          AND test_problem.test_id =#{testId}
+          AND problem_database.problem_id =test_problem.problem_id
+    </select>
+    <select id="getScore" resultType="java.lang.Integer">
+        SELECT test_score FROM answer_test_student
+        WHERE answer_test_student.student_id =#{student_id}
+          AND answer_test_student.test_id=#{testId}
+          AND answer_test_student.problem_id =#{problem_id}
+    </select>
+    <select id="getCountDataByQuestionId" resultMap="countData">
+        SELECT
+            test_problem.exam_score,
+            MAX( answer_test_student.test_score ) AS max,
+            MIN( answer_test_student.test_score ) AS min,
+            SUM( test_score ) AS sum
+        FROM
+            problem_database,
+            test_problem,
+            answer_test_student
+        WHERE
+            test_problem.problem_id = #{problem_id}
+          AND problem_database.problem_id = #{problem_id}
+          AND answer_test_student.problem_id = #{problem_id}
+          AND test_problem.test_id = #{testId}
+          AND answer_test_student.test_id =#{testId}
+    </select>
+    <select id="countScore" resultType="java.lang.Float">
+        SELECT SUM(answer_test_student.test_score)
+        FROM answer_test_student
+        WHERE answer_test_student.test_id=#{testId} AND answer_test_student.student_id =#{student_id}
+    </select>
+</mapper>

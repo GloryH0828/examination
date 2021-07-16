@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link href="layui/css/layui.css" media="all" rel="stylesheet">
+    <script src="layui/layui.js" type="text/javascript"></script>
+    <script src="js/jquery-3.3.1.min.js" type="text/javascript"></script>
+    <script src="https://cdn.bootcss.com/xlsx/0.11.5/xlsx.core.min.js"></script>
+</head>
+<body>
+<div class="layui-container" style="margin-top: 50px;">
+    <div class="layui-container" style="width: 500px;height: 330px;padding-top: 60px;">
+        <form action="/menu/save" class="layui-form" method="post">
+            <div class="layui-form-item">
+                <label class="layui-form-label">模板下载：</label>
+                <div class="layui-inline">
+                    <button class="layui-btn" id="down-stu-template" lay-filter="down" lay-submit>点击下载模板</button>&nbsp;&nbsp;&nbsp;请按照模板格式填写导入文件
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">文件导入：</label>
+                <div class="layui-inline">
+                    <input autocomplete="off" class="layui-input" id="xls-file" name="file" placeholder="请选择文件"
+                           type="file">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <button class="layui-btn" lay-filter="submit" lay-submit style="margin-left: 160px;">导入</button>
+            </div>
+        </form>
+    </div>
+    <table class="layui-table" id="test" lay-filter="test"></table>
+</div>
+<script charset="utf-8" src="layui/layui.js"></script>
+<script>
+    var result = {"id": 1};
+    $('#xls-file').change(function (e) {
+        var files = e.target.files;
+        var fileReader = new FileReader();
+
+        fileReader.onload = function (ev) {
+            try {
+                var data = ev.target.result
+                var workbook = XLSX.read(data, {
+                    type: 'binary'
+                }) // 以二进制流方式读取得到整份excel表格对象
+                var persons = []; // 存储获取到的数据
+            } catch (e) {
+                console.log('文件类型不正确');
+                return;
+            }
+            // 表格的表格范围，可用于判断表头是否数量是否正确
+            var fromTo = '';
+            // 遍历每张表读取
+            for (var sheet in workbook.Sheets) {
+                if (workbook.Sheets.hasOwnProperty(sheet)) {
+                    fromTo = workbook.Sheets[sheet]['!ref'];
+                    console.log(fromTo);
+                    persons = persons.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+                    // break; // 如果只取第一张表，就取消注释这行
+                }
+            }
+            //在控制台打印出来表格中的数据
+            console.log(persons);
+            layui.use('table', function () {
+                var table = layui.table;
+                table.render({
+                    elem: '#test' //指定原始表格元素选择器（推荐id选择器）
+                    //,height: 315 //容器高度
+                    , cols: [[ //标题栏
+                        {field: '班级编号', title: '班级编号'}
+                        , {field: '学号', title: '学号'}
+                        , {field: '姓名', title: '姓名'}
+                        , {field: '性别', title: '性别'}
+                        , {field: '手机号', title: '手机号'}
+                        , {field: '邮箱', title: '邮箱'}
+                    ]] //设置表头
+                    , data: persons
+                    //,…… //更多参数参考右侧目录：基本参数选项
+                });
+            });
+        };
+        // 以二进制方式打开文件
+        fileReader.readAsBinaryString(files[0]);
+    });
+    layui.use(['form', 'table'], function () {
+        var form = layui.form;
+        var table = layui.table;
+        form.on('submit(down)', function (data) {
+            try {
+                var elemIF = document.createElement("iframe");
+                elemIF.src = "templates/stu-import-temp.xlsx";
+                elemIF.style.display = "none";
+                document.body.appendChild(elemIF);
+            } catch (e) {
+                alert("下载失败");
+            }
+            return false;
+        });
+
+        form.on('submit(submit)', function (data) {
+            console.log(JSON.stringify(table.cache));
+            $.ajax({
+                url: '/student/import', //请求url
+                data: JSON.stringify(table.cache["test"]), //请求参数，类似于username=xxx&password=xxx
+                type: 'post', //请求方式
+                dataType: 'json', //返回值的类型
+                contentType: 'application/json', // 注意这里，传递对象给后台，这里必须是 application/json
+                success: function (result) {  //服务器成功返回时执行的函数
+                    if (result.code == 2000) {
+                        alert("批量添加成功");
+                        location.reload();
+                    } else {
+                        alert("添加失败，请检查网络，核对数据表");
+                    }
+
+
+                }
+            });
+            return false;
+        });
+    });
+
+</script>
+</body>
+</html>
